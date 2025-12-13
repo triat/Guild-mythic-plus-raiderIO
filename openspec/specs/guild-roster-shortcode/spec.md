@@ -17,13 +17,13 @@ The system SHALL provide a WordPress shortcode `[gmpr_guild]` that displays a li
 - **WHEN** `[gmpr_guild]` is rendered with invalid or missing region/realm/guild
 - **THEN** the plugin renders a user-friendly error and performs no external call
 
-#### Scenario: Use admin settings as defaults
-- **WHEN** an admin has configured defaults in Settings → GMPR and the shortcode does not provide attributes for region/realm/guild
-- **THEN** the plugin uses those defaults to determine which guild to display
+#### Scenario: Always-visible view toggle and cards view
+- **WHEN** `[gmpr_guild]` is rendered
+- **THEN** the output provides both inline and cards presentations and an always-visible toggle that lets the user switch views
 
-#### Scenario: Shortcode attributes take precedence
-- **WHEN** `region/realm/guild` attributes are provided in the shortcode and are valid
-- **THEN** those attributes override the values configured in Settings → GMPR
+#### Scenario: Persisted view preference
+- **WHEN** a user selects a view and reloads the page
+- **THEN** the previously selected view is restored
 
 ### Requirement: Configuration sécurisée de la clé API
 The system MUST read the Raider.IO API key server-side only and MUST NOT expose the API key in rendered HTML, shortcode attributes, or public URLs.

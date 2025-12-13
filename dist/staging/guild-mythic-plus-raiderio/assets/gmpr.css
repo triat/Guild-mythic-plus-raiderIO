@@ -17,6 +17,193 @@
   margin-bottom: 0.75rem;
 }
 
+.gmpr-view-toggle {
+  display: inline-flex;
+  gap: 0.25rem;
+  margin: 0 0 0.75rem;
+  background: #f6f7f7;
+  border: 1px solid #dcdcde;
+  border-radius: 999px;
+  padding: 0.25rem;
+}
+
+.gmpr-toggle-btn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0.4rem 0.65rem;
+  border-radius: 999px;
+  cursor: pointer;
+  color: #1d2327;
+  font-weight: 600;
+}
+
+.gmpr-toggle-btn[aria-pressed="true"] {
+  background: #2271b1;
+  color: #fff;
+}
+
+.gmpr-toggle-btn:hover {
+  background: rgba(34, 113, 177, 0.12);
+}
+
+.gmpr-toggle-btn[aria-pressed="true"]:hover {
+  background: #1b5f93;
+}
+
+.gmpr-toggle-btn:focus {
+  outline: 2px solid #2271b1;
+  outline-offset: 2px;
+}
+
+.gmpr-view-cards {
+  display: none;
+}
+
+.gmpr[data-gmpr-view="cards"] .gmpr-view-inline {
+  display: none;
+}
+
+.gmpr[data-gmpr-view="cards"] .gmpr-view-cards {
+  display: block;
+}
+
+.gmpr-inline-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #dcdcde;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.gmpr-inline-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.gmpr-inline-row:last-child {
+  border-bottom: 0;
+}
+
+.gmpr-inline-name {
+  font-weight: 700;
+  color: #1d2327;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gmpr-inline-score {
+  font-weight: 700;
+  color: #2271b1;
+  white-space: nowrap;
+}
+
+.gmpr-inline-link a {
+  text-decoration: none;
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #dcdcde;
+  background: #f6f7f7;
+  color: #1d2327;
+}
+
+.gmpr-inline-link a:hover {
+  border-color: rgba(34, 113, 177, 0.45);
+  background: rgba(34, 113, 177, 0.08);
+}
+
+.gmpr-cards {
+  display: grid;
+  /* Mobile-first: 1 card per row by default */
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.gmpr-card {
+  border: 1px solid #dcdcde;
+  border-radius: 8px;
+  background: #fff;
+  padding: 0.95rem;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.03);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+
+.gmpr-card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
+}
+
+.gmpr-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.gmpr-card-avatar {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 999px;
+  background: #f0f6fc;
+  border: 1px solid rgba(34, 113, 177, 0.25);
+  color: #1b5f93;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  flex: 0 0 auto;
+}
+
+.gmpr-card-name {
+  font-weight: 700;
+  color: #1d2327;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gmpr-card-score {
+  font-weight: 700;
+  color: #2271b1;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.gmpr-card-footer {
+  margin-top: 0.5rem;
+}
+
+.gmpr-card-link {
+  display: inline-block;
+  text-decoration: none;
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #dcdcde;
+  background: #f6f7f7;
+  color: #1d2327;
+}
+
+.gmpr-card-link:hover {
+  border-color: rgba(34, 113, 177, 0.45);
+  background: rgba(34, 113, 177, 0.08);
+}
+
+.gmpr-card-link-disabled {
+  color: #646970;
+  background: transparent;
+  border-color: transparent;
+}
+
 .gmpr-table-wrap {
   overflow-x: auto;
 }
@@ -39,39 +226,31 @@
 }
 
 @media (max-width: 640px) {
-  .gmpr-table thead {
-    display: none;
+  .gmpr-inline-row {
+    grid-template-columns: 1fr;
+    align-items: start;
   }
 
-  .gmpr-table,
-  .gmpr-table tbody,
-  .gmpr-table tr,
-  .gmpr-table td {
-    display: block;
-    width: 100%;
+  .gmpr-inline-link a {
+    width: fit-content;
   }
 
-  .gmpr-table tr {
-    border: 1px solid #dcdcde;
-    margin-bottom: 0.75rem;
-    border-radius: 6px;
-    overflow: hidden;
+  .gmpr-cards {
+    grid-template-columns: 1fr;
   }
 
-  .gmpr-table td {
-    display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    border-bottom: 1px solid #dcdcde;
-  }
+  /* Table view removed; inline view is the default fallback on small screens. */
+}
 
-  .gmpr-table td:last-child {
-    border-bottom: 0;
+@media (min-width: 641px) {
+  .gmpr-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
 
-  .gmpr-table td::before {
-    content: attr(data-label);
-    font-weight: 600;
+@media (min-width: 961px) {
+  .gmpr-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 

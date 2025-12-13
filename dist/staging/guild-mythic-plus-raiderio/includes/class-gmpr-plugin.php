@@ -223,6 +223,14 @@ final class GMPR_Plugin {
 			array(),
 			GMPR_VERSION
 		);
+
+		wp_enqueue_script(
+			'gmpr-guild',
+			GMPR_PLUGIN_URL . 'assets/gmpr.js',
+			array(),
+			GMPR_VERSION,
+			true
+		);
 	}
 
 	/**

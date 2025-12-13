@@ -43,6 +43,9 @@ In a page / post:
 - **ttl** (optional): cache TTL in seconds (min 60, max 6h, default ~15min)
 - **refresh** (optional): `1|true|yes` to **force a refresh** (bypass cache). **Admin-only** (security).
 
+### UI
+The roster includes an always-visible **Inline / Cards** toggle. The selected view is persisted in the browser via `localStorage` (key: `gmpr_roster_view`).
+
 ## Troubleshooting (view errors)
 The shortcode intentionally shows a user-friendly error. To see details:
 
