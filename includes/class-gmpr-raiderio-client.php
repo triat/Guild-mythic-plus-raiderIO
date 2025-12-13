@@ -144,7 +144,8 @@ final class GMPR_RaiderIO_Client {
 			'region' => $region,
 			'realm'  => $realm_slug,
 			'name'   => $character_name,
-			'fields' => 'mythic_plus_scores_by_season:current',
+			// Scores + best runs (used by compact inline UI).
+			'fields' => 'mythic_plus_scores_by_season:current,mythic_plus_best_runs',
 		);
 
 		$url = add_query_arg($query, $endpoint);
