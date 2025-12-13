@@ -10,6 +10,7 @@ final class GMPR_Plugin {
 
 	public static function init(): void {
 		add_shortcode('gmpr_guild', array(__CLASS__, 'shortcode_guild'));
+		GMPR_Settings::init();
 	}
 
 	/**
@@ -28,9 +29,11 @@ final class GMPR_Plugin {
 
 		$atts = shortcode_atts($defaults, $atts, 'gmpr_guild');
 
-		$region = self::resolve_setting_string((string) $atts['region'], 'GMPR_REGION');
-		$realm  = self::resolve_setting_string((string) $atts['realm'], 'GMPR_REALM');
-		$guild  = self::resolve_setting_string((string) $atts['guild'], 'GMPR_GUILD');
+		$settings = GMPR_Settings::get_settings();
+
+		$region = self::resolve_setting_string((string) $atts['region'], $settings, 'region', 'GMPR_REGION');
+		$realm  = self::resolve_setting_string((string) $atts['realm'], $settings, 'realm', 'GMPR_REALM');
+		$guild  = self::resolve_setting_string((string) $atts['guild'], $settings, 'guild', 'GMPR_GUILD');
 
 		$region = sanitize_key($region);
 		$realm_slug = self::normalize_realm_for_raiderio($realm);
@@ -51,7 +54,8 @@ final class GMPR_Plugin {
 			);
 		}
 
-		$ttl = self::parse_ttl_seconds((string) $atts['ttl']);
+		$ttl_default = isset($settings['ttl_seconds']) ? (int) $settings['ttl_seconds'] : (15 * MINUTE_IN_SECONDS);
+		$ttl = self::parse_ttl_seconds((string) $atts['ttl'], $ttl_default);
 		$refresh_requested = self::parse_bool((string) $atts['refresh']);
 		$can_refresh = $refresh_requested && is_user_logged_in() && current_user_can('manage_options');
 
@@ -60,7 +64,7 @@ final class GMPR_Plugin {
 
 		$cached = $can_refresh ? null : $cache->get_fresh($cache_key);
 		if (is_array($cached)) {
-			$cached = self::apply_member_limit($cached);
+			$cached = self::apply_member_limit($cached, $settings);
 			self::enqueue_assets();
 			return GMPR_Renderer::render_guild_table($cached, false);
 		}
@@ -83,7 +87,7 @@ final class GMPR_Plugin {
 		$normalized = GMPR_RaiderIO_Client::normalize_guild_roster_response($result, $region, $realm_slug);
 
 		// Temporary limit to speed up page loads (also reduces characters/profile calls).
-		$normalized = self::apply_member_limit($normalized);
+		$normalized = self::apply_member_limit($normalized, $settings);
 
 		// Hydrate per-character Mythic+ scores (character profile endpoint) when needed.
 		$normalized = self::hydrate_member_scores($normalized, $client, $cache, $region, $realm_slug, $ttl, $can_refresh);
@@ -221,10 +225,22 @@ final class GMPR_Plugin {
 		);
 	}
 
-	private static function resolve_setting_string(string $from_atts, string $constant_name): string {
+	/**
+	 * Resolution order: shortcode attribute > admin settings > constant.
+	 *
+	 * @param array<string, mixed> $settings
+	 */
+	private static function resolve_setting_string(string $from_atts, array $settings, string $settings_key, string $constant_name): string {
 		$from_atts = trim($from_atts);
 		if ($from_atts !== '') {
 			return $from_atts;
+		}
+
+		if (isset($settings[$settings_key]) && is_string($settings[$settings_key])) {
+			$from_settings = trim((string) $settings[$settings_key]);
+			if ($from_settings !== '') {
+				return $from_settings;
+			}
 		}
 
 		if (defined($constant_name) && is_string(constant($constant_name))) {
@@ -249,8 +265,7 @@ final class GMPR_Plugin {
 		return $guild;
 	}
 
-	private static function parse_ttl_seconds(string $ttl_raw): int {
-		$default = 15 * MINUTE_IN_SECONDS;
+	private static function parse_ttl_seconds(string $ttl_raw, int $default): int {
 		$ttl_raw = trim($ttl_raw);
 		if ($ttl_raw === '') {
 			return $default;
@@ -276,8 +291,14 @@ final class GMPR_Plugin {
 	 * @param array<string, mixed> $data
 	 * @return array<string, mixed>
 	 */
-	private static function apply_member_limit(array $data): array {
-		$limit = (int) apply_filters('gmpr_member_limit', self::DEFAULT_MEMBER_LIMIT);
+	/**
+	 * @param array<string, mixed> $data
+	 * @param array<string, mixed>|null $settings
+	 * @return array<string, mixed>
+	 */
+	private static function apply_member_limit(array $data, ?array $settings = null): array {
+		$default = isset($settings['member_limit']) ? (int) $settings['member_limit'] : self::DEFAULT_MEMBER_LIMIT;
+		$limit = (int) apply_filters('gmpr_member_limit', $default);
 		if ($limit <= 0) {
 			return $data;
 		}

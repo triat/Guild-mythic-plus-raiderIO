@@ -26,6 +26,7 @@ require_once GMPR_PLUGIN_DIR . 'includes/class-gmpr-plugin.php';
 require_once GMPR_PLUGIN_DIR . 'includes/class-gmpr-raiderio-client.php';
 require_once GMPR_PLUGIN_DIR . 'includes/class-gmpr-cache.php';
 require_once GMPR_PLUGIN_DIR . 'includes/class-gmpr-renderer.php';
+require_once GMPR_PLUGIN_DIR . 'includes/class-gmpr-settings.php';
 
 add_action('plugins_loaded', array('GMPR_Plugin', 'init'));
 

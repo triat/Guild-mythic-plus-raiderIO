@@ -17,19 +17,23 @@ The system SHALL provide a WordPress shortcode `[gmpr_guild]` that displays a li
 - **WHEN** `[gmpr_guild]` is rendered with invalid or missing region/realm/guild
 - **THEN** the plugin renders a user-friendly error and performs no external call
 
-#### Scenario: Score Mythic+ best-effort
-- **WHEN** the guild roster does not directly include per-member Mythic+ scores
-- **THEN** the plugin attempts to hydrate these scores via a “character profile” endpoint (best-effort) and leaves the score empty if not found
+#### Scenario: Use admin settings as defaults
+- **WHEN** an admin has configured defaults in Settings → GMPR and the shortcode does not provide attributes for region/realm/guild
+- **THEN** the plugin uses those defaults to determine which guild to display
+
+#### Scenario: Shortcode attributes take precedence
+- **WHEN** `region/realm/guild` attributes are provided in the shortcode and are valid
+- **THEN** those attributes override the values configured in Settings → GMPR
 
 ### Requirement: Configuration sécurisée de la clé API
 The system MUST read the Raider.IO API key server-side only and MUST NOT expose the API key in rendered HTML, shortcode attributes, or public URLs.
 
-#### Scenario: Clé API fournie via constante ou filtre
-- **WHEN** `GMPR_RAIDERIO_API_KEY` is defined (or a filter provides a key)
-- **THEN** the Raider.IO client uses that key to authenticate outbound requests without reflecting it in HTML
+#### Scenario: API key from admin settings
+- **WHEN** an API key is configured via Settings → GMPR
+- **THEN** the Raider.IO client uses that key server-side without reflecting it in HTML
 
 #### Scenario: Clé API absente
-- **WHEN** no API key is available
+- **WHEN** no API key is available (neither admin settings nor server-side fallback)
 - **THEN** the plugin renders a clear error and performs no external call
 
 ### Requirement: Cache via transients

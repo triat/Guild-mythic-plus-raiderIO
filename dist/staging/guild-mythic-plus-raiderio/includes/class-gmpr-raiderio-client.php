@@ -17,12 +17,19 @@ final class GMPR_RaiderIO_Client {
 	public static function resolve_api_key(): string {
 		$key = '';
 
+		$settings = GMPR_Settings::get_settings();
+		if (isset($settings['api_key']) && is_string($settings['api_key'])) {
+			$key = (string) $settings['api_key'];
+		}
+
 		if (defined('GMPR_RAIDERIO_API_KEY') && is_string(constant('GMPR_RAIDERIO_API_KEY'))) {
-			$key = (string) constant('GMPR_RAIDERIO_API_KEY');
+			if (trim($key) === '') {
+				$key = (string) constant('GMPR_RAIDERIO_API_KEY');
+			}
 		}
 
 		/**
-		 * Filtre pour injecter la clé API depuis un gestionnaire de secrets.
+		 * Filter to inject the API key from a secret manager.
 		 *
 		 * @param string $key
 		 */
@@ -39,7 +46,7 @@ final class GMPR_RaiderIO_Client {
 	public function fetch_guild_roster(string $region, string $realm_slug, string $guild_name) {
 		$endpoint = self::API_BASE . 'guilds/profile';
 
-		// Champs minimum: members. On tente aussi d'obtenir des scores par saison si Raider.IO les inclut.
+		// Minimum fields: members. Scores are hydrated separately when needed.
 		$query = array(
 			'region' => $region,
 			'realm'  => $realm_slug,
@@ -52,13 +59,13 @@ final class GMPR_RaiderIO_Client {
 
 		$headers = array(
 			'Accept' => 'application/json',
-			// Auth v1: Raider.IO API key est généralement attendue en header.
-			// IMPORTANT: ne jamais logguer cette valeur.
+			// Raider.IO API key is expected in a header.
+			// IMPORTANT: never log this value.
 			'Authorization' => 'Bearer ' . $this->api_key,
 		);
 
 		/**
-		 * Permet de surcharger/compléter les headers d'auth Raider.IO.
+		 * Allows overriding/adding Raider.IO auth headers.
 		 *
 		 * @param array<string, string> $headers
 		 */
@@ -126,7 +133,7 @@ final class GMPR_RaiderIO_Client {
 	}
 
 	/**
-	 * Récupère le profil d'un personnage (pour obtenir le score Mythic+).
+	 * Fetch a character profile (to obtain the Mythic+ score).
 	 *
 	 * @return array<string, mixed>|\WP_Error
 	 */
@@ -154,7 +161,7 @@ final class GMPR_RaiderIO_Client {
 		$response = wp_remote_get(
 			$url,
 			array(
-				// Timeout plus court: on peut faire plusieurs appels (un par membre) lors d'un cache miss.
+				// Shorter timeout: we may do multiple calls (one per member) on cache miss.
 				'timeout' => 4,
 				'redirection' => 2,
 				'headers' => $headers,
@@ -214,7 +221,7 @@ final class GMPR_RaiderIO_Client {
 	}
 
 	/**
-	 * Normalise la réponse Raider.IO en modèle minimal pour le rendu.
+	 * Normalize Raider.IO response into a minimal internal model for rendering.
 	 *
 	 * @param array<string, mixed> $data
 	 * @return array<string, mixed>
@@ -248,7 +255,7 @@ final class GMPR_RaiderIO_Client {
 			}
 		}
 
-		// Tri simple: score desc puis nom asc (stable).
+		// Simple sort: score desc, then name asc (stable).
 		usort(
 			$members,
 			static function (array $a, array $b): int {
@@ -278,7 +285,7 @@ final class GMPR_RaiderIO_Client {
 	 * @param array<string, mixed> $character
 	 */
 	private static function extract_mplus_score(array $character): ?float {
-		// Raider.IO inclut généralement mythic_plus_scores_by_season (tableau), avec scores.all.
+		// Raider.IO commonly includes mythic_plus_scores_by_season (array) with scores.all.
 		if (!isset($character['mythic_plus_scores_by_season']) || !is_array($character['mythic_plus_scores_by_season'])) {
 			return null;
 		}
@@ -298,7 +305,7 @@ final class GMPR_RaiderIO_Client {
 	}
 
 	/**
-	 * Logs uniquement en mode debug (et sans secret).
+	 * Debug-only logging (no secrets).
 	 *
 	 * @param array<string, mixed> $context
 	 */
@@ -333,7 +340,7 @@ final class GMPR_RaiderIO_Client {
 			return '';
 		}
 
-		// Certains rosters incluent un suffixe "-<id>" (ex: "Cielã-267166348") qui n'est pas valide pour characters/profile.
+		// Some rosters include a "-<id>" suffix (e.g. "Cielã-267166348") which is not valid for characters/profile.
 		if (preg_match('/^(.+)-\d+$/u', $name, $m)) {
 			return (string) $m[1];
 		}

@@ -17,8 +17,15 @@ final class GMPR_RaiderIO_Client {
 	public static function resolve_api_key(): string {
 		$key = '';
 
+		$settings = GMPR_Settings::get_settings();
+		if (isset($settings['api_key']) && is_string($settings['api_key'])) {
+			$key = (string) $settings['api_key'];
+		}
+
 		if (defined('GMPR_RAIDERIO_API_KEY') && is_string(constant('GMPR_RAIDERIO_API_KEY'))) {
-			$key = (string) constant('GMPR_RAIDERIO_API_KEY');
+			if (trim($key) === '') {
+				$key = (string) constant('GMPR_RAIDERIO_API_KEY');
+			}
 		}
 
 		/**
