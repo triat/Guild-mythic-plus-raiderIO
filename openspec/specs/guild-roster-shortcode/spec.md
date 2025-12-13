@@ -31,17 +31,17 @@ The system MUST read the Raider.IO API key server-side only and MUST NOT expose 
 ### Requirement: Cache via transients
 The system SHALL cache Raider.IO results using WordPress transients to reduce external calls.
 
-#### Scenario: Cache hit (fresh)
-- **WHEN** `[gmpr_guild]` is rendered and a fresh cached roster exists for the roster context
-- **THEN** the plugin renders without making external HTTP calls during that request
+#### Scenario: Cache hit
+- **WHEN** `[gmpr_guild]` is rendered and a valid transient exists for (region, realm, guild)
+- **THEN** the plugin uses the cache and performs no external HTTP request
 
-#### Scenario: Cache hit (stale)
-- **WHEN** `[gmpr_guild]` is rendered and only a stale cache exists for the roster context
-- **THEN** the plugin renders using stale data and triggers an asynchronous refresh
+#### Scenario: Cache miss
+- **WHEN** `[gmpr_guild]` is rendered and no valid cache exists
+- **THEN** the plugin performs an external HTTP request, normalizes the response, and stores the result in cache
 
-#### Scenario: Cache miss (cold start)
-- **WHEN** `[gmpr_guild]` is rendered and no cache exists for the roster context
-- **THEN** the plugin renders a lightweight loading state and triggers an asynchronous refresh
+#### Scenario: Cache par personnage (enriched profile fields)
+- **WHEN** the plugin hydrates per-character data via “character profile” calls (score, avatar, best runs, spec/class/faction)
+- **THEN** the plugin caches these fields per character to avoid repeated calls
 
 ### Requirement: Tolérance aux pannes et stale cache
 The system SHALL handle Raider.IO network/HTTP errors and SHALL render a fallback based on “stale cache” when available.
