@@ -1,0 +1,78 @@
+.gmpr.gmpr-wrap {
+  margin: 1rem 0;
+}
+
+.gmpr-error {
+  padding: 0.75rem 1rem;
+  border: 1px solid #d63638;
+  background: #fff5f5;
+  color: #1d2327;
+}
+
+.gmpr-notice {
+  padding: 0.5rem 0.75rem;
+  border-left: 4px solid #2271b1;
+  background: #f0f6fc;
+  color: #1d2327;
+  margin-bottom: 0.75rem;
+}
+
+.gmpr-table-wrap {
+  overflow-x: auto;
+}
+
+.gmpr-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.gmpr-table th,
+.gmpr-table td {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  border-bottom: 1px solid #dcdcde;
+}
+
+.gmpr-col-score {
+  width: 10rem;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .gmpr-table thead {
+    display: none;
+  }
+
+  .gmpr-table,
+  .gmpr-table tbody,
+  .gmpr-table tr,
+  .gmpr-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .gmpr-table tr {
+    border: 1px solid #dcdcde;
+    margin-bottom: 0.75rem;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .gmpr-table td {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid #dcdcde;
+  }
+
+  .gmpr-table td:last-child {
+    border-bottom: 0;
+  }
+
+  .gmpr-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+  }
+}
+
+
