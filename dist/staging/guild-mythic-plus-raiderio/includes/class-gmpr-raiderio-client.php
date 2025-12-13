@@ -243,6 +243,7 @@ final class GMPR_RaiderIO_Client {
 				$name = self::sanitize_character_name($name);
 
 				$profile_url = isset($character['profile_url']) && is_string($character['profile_url']) ? $character['profile_url'] : '';
+				$avatar_url = self::extract_avatar_url($character);
 
 				$score = self::extract_mplus_score($character);
 
@@ -251,6 +252,7 @@ final class GMPR_RaiderIO_Client {
 					'realm'       => isset($character['realm']) && is_string($character['realm']) ? $character['realm'] : $realm_slug,
 					'mplus_score' => $score, // float|null
 					'profile_url' => $profile_url,
+					'avatar_url'  => $avatar_url,
 				);
 			}
 		}
@@ -302,6 +304,26 @@ final class GMPR_RaiderIO_Client {
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param array<string, mixed> $character
+	 */
+	private static function extract_avatar_url(array $character): string {
+		// Raider.IO commonly exposes a thumbnail URL on character objects.
+		if (isset($character['thumbnail_url']) && is_string($character['thumbnail_url'])) {
+			return trim($character['thumbnail_url']);
+		}
+
+		// Fallbacks (best-effort).
+		if (isset($character['avatar_url']) && is_string($character['avatar_url'])) {
+			return trim($character['avatar_url']);
+		}
+		if (isset($character['portrait_url']) && is_string($character['portrait_url'])) {
+			return trim($character['portrait_url']);
+		}
+
+		return '';
 	}
 
 	/**

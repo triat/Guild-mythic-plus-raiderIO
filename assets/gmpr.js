@@ -31,6 +31,22 @@
     if (btnCards) btnCards.setAttribute("aria-pressed", view === "cards" ? "true" : "false");
   }
 
+  function initAvatars(wrapper) {
+    var imgs = wrapper.querySelectorAll('img[data-gmpr-avatar="1"]');
+    for (var i = 0; i < imgs.length; i++) {
+      (function (img) {
+        img.addEventListener("error", function () {
+          var placeholder = img.getAttribute("data-gmpr-placeholder-src");
+          if (!placeholder) return;
+          if (img.getAttribute("data-gmpr-avatar-state") === "placeholder") return;
+          img.setAttribute("data-gmpr-avatar-state", "placeholder");
+          img.removeAttribute("srcset");
+          img.src = placeholder;
+        });
+      })(imgs[i]);
+    }
+  }
+
   function initWrapper(wrapper) {
     var stored = getStoredView();
     var initial = stored || wrapper.getAttribute("data-gmpr-view") || "inline";
@@ -47,6 +63,8 @@
         setStoredView(view);
       });
     }
+
+    initAvatars(wrapper);
   }
 
   document.addEventListener("DOMContentLoaded", function () {

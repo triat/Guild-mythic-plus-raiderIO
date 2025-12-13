@@ -32,6 +32,7 @@ final class GMPR_Renderer {
 	 */
 	public static function render_guild_table(array $data, bool $is_stale): string {
 		$members = isset($data['members']) && is_array($data['members']) ? $data['members'] : array();
+		$placeholder = defined('GMPR_PLUGIN_URL') ? GMPR_PLUGIN_URL . 'assets/avatar-placeholder.svg' : '';
 
 		$out = '<div class="gmpr gmpr-wrap" data-gmpr-roster="1" data-gmpr-view="inline">';
 
@@ -59,8 +60,11 @@ final class GMPR_Renderer {
 			$name = isset($m['name']) ? (string) $m['name'] : '';
 			$score = isset($m['mplus_score']) && is_numeric($m['mplus_score']) ? number_format_i18n((float) $m['mplus_score'], 0) : '—';
 			$url = isset($m['profile_url']) ? (string) $m['profile_url'] : '';
+			$avatar_url = isset($m['avatar_url']) && is_string($m['avatar_url']) ? trim((string) $m['avatar_url']) : '';
+			$img_src = $avatar_url !== '' ? $avatar_url : $placeholder;
 
 			$out .= '<li class="gmpr-inline-row">';
+			$out .= '<img class="gmpr-avatar gmpr-avatar--sm" data-gmpr-avatar="1" data-gmpr-placeholder-src="' . esc_attr($placeholder) . '" src="' . esc_url($img_src) . '" alt="' . esc_attr(sprintf(__('Avatar of %s', 'gmpr'), $name)) . '" loading="lazy" decoding="async" />';
 			$out .= '<span class="gmpr-inline-name">' . esc_html($name) . '</span>';
 			$out .= '<span class="gmpr-inline-score" aria-label="' . esc_attr__('Mythic+ score', 'gmpr') . '">' . esc_html($score) . '</span>';
 			if ($url !== '') {
@@ -87,14 +91,17 @@ final class GMPR_Renderer {
 					continue;
 				}
 				$name = isset($m['name']) ? (string) $m['name'] : '';
-				$initials = self::initials($name);
 				$score_raw = isset($m['mplus_score']) && is_numeric($m['mplus_score']) ? (float) $m['mplus_score'] : null;
 				$score = $score_raw !== null ? number_format_i18n($score_raw, 0) : '—';
 				$url = isset($m['profile_url']) ? (string) $m['profile_url'] : '';
+				$avatar_url = isset($m['avatar_url']) && is_string($m['avatar_url']) ? trim((string) $m['avatar_url']) : '';
+				$img_src = $avatar_url !== '' ? $avatar_url : $placeholder;
 
 				$out .= '<div class="gmpr-card">';
 				$out .= '<div class="gmpr-card-header">';
-				$out .= '<div class="gmpr-card-avatar" aria-hidden="true">' . esc_html($initials) . '</div>';
+				$out .= '<div class="gmpr-card-avatar">';
+				$out .= '<img class="gmpr-avatar gmpr-avatar--md" data-gmpr-avatar="1" data-gmpr-placeholder-src="' . esc_attr($placeholder) . '" src="' . esc_url($img_src) . '" alt="' . esc_attr(sprintf(__('Avatar of %s', 'gmpr'), $name)) . '" loading="lazy" decoding="async" />';
+				$out .= '</div>';
 				$out .= '<div class="gmpr-card-name">' . esc_html($name) . '</div>';
 				$out .= '<div class="gmpr-card-score" aria-label="' . esc_attr__('Mythic+ score', 'gmpr') . '">' . esc_html($score) . '</div>';
 				$out .= '</div>';

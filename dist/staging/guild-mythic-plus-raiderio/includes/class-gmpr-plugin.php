@@ -123,7 +123,10 @@ final class GMPR_Plugin {
 				continue;
 			}
 
-			if (isset($m['mplus_score']) && is_numeric($m['mplus_score'])) {
+			$needs_score = !(isset($m['mplus_score']) && is_numeric($m['mplus_score']));
+			$needs_avatar = !(isset($m['avatar_url']) && is_string($m['avatar_url']) && trim((string) $m['avatar_url']) !== '');
+
+			if (!$needs_score && !$needs_avatar) {
 				continue;
 			}
 
@@ -141,16 +144,30 @@ final class GMPR_Plugin {
 
 			$char_key = $cache->build_character_cache_key($region, $realm_slug, $name);
 			$cached_char = $force_refresh ? null : $cache->get_fresh($char_key);
-			if (is_array($cached_char) && isset($cached_char['mplus_score']) && is_numeric($cached_char['mplus_score'])) {
-				$members[$i]['mplus_score'] = (float) $cached_char['mplus_score'];
-				continue;
+			if (is_array($cached_char)) {
+				if ($needs_score && isset($cached_char['mplus_score']) && is_numeric($cached_char['mplus_score'])) {
+					$members[$i]['mplus_score'] = (float) $cached_char['mplus_score'];
+					$needs_score = false;
+				}
+				if ($needs_avatar && isset($cached_char['avatar_url']) && is_string($cached_char['avatar_url']) && trim($cached_char['avatar_url']) !== '') {
+					$members[$i]['avatar_url'] = (string) $cached_char['avatar_url'];
+					$needs_avatar = false;
+				}
+				if (!$needs_score && !$needs_avatar) {
+					continue;
+				}
 			}
 
 			$char = $client->fetch_character_profile($region, $realm_slug, $name);
 			if (is_wp_error($char)) {
 				$stale_char = $cache->get_stale($char_key);
-				if (is_array($stale_char) && isset($stale_char['mplus_score']) && is_numeric($stale_char['mplus_score'])) {
-					$members[$i]['mplus_score'] = (float) $stale_char['mplus_score'];
+				if (is_array($stale_char)) {
+					if ($needs_score && isset($stale_char['mplus_score']) && is_numeric($stale_char['mplus_score'])) {
+						$members[$i]['mplus_score'] = (float) $stale_char['mplus_score'];
+					}
+					if ($needs_avatar && isset($stale_char['avatar_url']) && is_string($stale_char['avatar_url']) && trim($stale_char['avatar_url']) !== '') {
+						$members[$i]['avatar_url'] = (string) $stale_char['avatar_url'];
+					}
 				}
 				continue;
 			}
@@ -160,8 +177,17 @@ final class GMPR_Plugin {
 				$members[$i]['mplus_score'] = $score;
 			}
 
-			$cache->set_fresh($char_key, array('mplus_score' => $score), $ttl);
-			$cache->set_stale($char_key, array('mplus_score' => $score));
+			$avatar = self::extract_character_avatar_url($char);
+			if ($avatar !== '') {
+				$members[$i]['avatar_url'] = $avatar;
+			}
+
+			$cache_value = array(
+				'mplus_score' => $score,
+				'avatar_url'  => $avatar,
+			);
+			$cache->set_fresh($char_key, $cache_value, $ttl);
+			$cache->set_stale($char_key, $cache_value);
 		}
 
 		$data['members'] = $members;
@@ -214,6 +240,22 @@ final class GMPR_Plugin {
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param array<string, mixed> $char
+	 */
+	private static function extract_character_avatar_url(array $char): string {
+		if (isset($char['thumbnail_url']) && is_string($char['thumbnail_url'])) {
+			return trim($char['thumbnail_url']);
+		}
+		if (isset($char['avatar_url']) && is_string($char['avatar_url'])) {
+			return trim($char['avatar_url']);
+		}
+		if (isset($char['portrait_url']) && is_string($char['portrait_url'])) {
+			return trim($char['portrait_url']);
+		}
+		return '';
 	}
 
 	private static function enqueue_assets(): void {
