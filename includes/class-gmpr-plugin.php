@@ -40,14 +40,14 @@ final class GMPR_Plugin {
 		$allowed_regions = array('eu', 'us', 'kr', 'tw', 'cn');
 		if ($region === '' || !in_array($region, $allowed_regions, true) || $realm_slug === '' || $guild_name === '') {
 			return GMPR_Renderer::render_error(
-				__('Configuration invalide: merci de fournir region/realm/guild valides.', 'gmpr')
+				__('Invalid configuration: please provide valid region/realm/guild.', 'gmpr')
 			);
 		}
 
 		$api_key = GMPR_RaiderIO_Client::resolve_api_key();
 		if ($api_key === '') {
 			return GMPR_Renderer::render_error(
-				__('Clé API Raider.IO manquante: définissez GMPR_RAIDERIO_API_KEY (ou un filtre gmpr_raiderio_api_key).', 'gmpr')
+				__('Missing Raider.IO API key: define GMPR_RAIDERIO_API_KEY (or use the gmpr_raiderio_api_key filter).', 'gmpr')
 			);
 		}
 
@@ -76,16 +76,16 @@ final class GMPR_Plugin {
 			}
 
 			return GMPR_Renderer::render_error(
-				__('Raider.IO indisponible pour le moment. Réessayez plus tard.', 'gmpr')
+				__('Raider.IO is currently unavailable. Please try again later.', 'gmpr')
 			);
 		}
 
 		$normalized = GMPR_RaiderIO_Client::normalize_guild_roster_response($result, $region, $realm_slug);
 
-		// Limite temporaire pour accélérer les rechargements (réduit aussi les appels characters/profile).
+		// Temporary limit to speed up page loads (also reduces characters/profile calls).
 		$normalized = self::apply_member_limit($normalized);
 
-		// Compléter les scores Mythic+ par personnage (endpoint character profile) si nécessaire.
+		// Hydrate per-character Mythic+ scores (character profile endpoint) when needed.
 		$normalized = self::hydrate_member_scores($normalized, $client, $cache, $region, $realm_slug, $ttl, $can_refresh);
 
 		$cache->set_fresh($cache_key, $normalized, $ttl);
@@ -165,7 +165,7 @@ final class GMPR_Plugin {
 	}
 
 	/**
-	 * Transforme un realm en slug Raider.IO en conservant les accents (WordPress sanitize_title les supprime).
+	 * Convert a realm into a Raider.IO realm slug while preserving accents (WordPress sanitize_title strips them).
 	 */
 	private static function normalize_realm_for_raiderio(string $realm): string {
 		$realm = trim($realm);
@@ -179,11 +179,11 @@ final class GMPR_Plugin {
 			$realm = strtolower($realm);
 		}
 
-		// Apostrophes et espaces -> tirets.
+		// Apostrophes and spaces -> hyphens.
 		$realm = str_replace(array('’', '\'', ' '), array('-', '-', '-'), $realm);
-		// Remplacer tout le reste (sauf lettres/chiffres/tirets) par tiret.
+		// Replace everything else (except letters/digits/hyphens) by a hyphen.
 		$realm = preg_replace('/[^\p{L}\p{N}-]+/u', '-', $realm);
-		// Normaliser les tirets.
+		// Normalize hyphens.
 		$realm = preg_replace('/-+/', '-', (string) $realm);
 		$realm = trim((string) $realm, '-');
 

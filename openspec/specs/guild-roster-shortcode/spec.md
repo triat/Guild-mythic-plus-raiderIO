@@ -1,96 +1,96 @@
 # guild-roster-shortcode Specification
 
 ## Purpose
-TBD - created by archiving change add-plugin-mvp-shortcode. Update Purpose after archive.
+Display a World of Warcraft guild roster via a WordPress shortcode, backed by Raider.IO data and WordPress caching.
 ## Requirements
 ### Requirement: Shortcode roster de guilde
-Le système SHALL fournir un shortcode WordPress `[gmpr_guild]` qui affiche une liste de membres d’une guilde World of Warcraft avec au minimum:
-- le nom du personnage,
-- le score Mythic+ (Raider.IO),
-- un lien vers le profil Raider.IO.
+The system SHALL provide a WordPress shortcode `[gmpr_guild]` that displays a list of World of Warcraft guild members with at least:
+- the character name,
+- the Mythic+ score (Raider.IO),
+- a link to the Raider.IO profile.
 
 #### Scenario: Rendu nominal
-- **WHEN** un éditeur ajoute `[gmpr_guild]` dans une page et que la configuration est valide (region/realm/guild) et que Raider.IO répond avec succès
-- **THEN** la page rend une table responsive contenant les membres et leurs champs minimums
+- **WHEN** an editor adds `[gmpr_guild]` to a page and the configuration is valid (region/realm/guild) and Raider.IO responds successfully
+- **THEN** the page renders a responsive table containing members and the minimum fields
 
 #### Scenario: Paramètres invalides
-- **WHEN** `[gmpr_guild]` est rendu avec une region/realm/guild invalides ou manquants
-- **THEN** le plugin rend un message d’erreur non-technique et n’effectue pas d’appel externe
+- **WHEN** `[gmpr_guild]` is rendered with invalid or missing region/realm/guild
+- **THEN** the plugin renders a user-friendly error and performs no external call
 
 #### Scenario: Score Mythic+ best-effort
-- **WHEN** le roster de guilde ne contient pas directement les scores Mythic+ par membre
-- **THEN** le plugin tente de compléter ces scores via un endpoint “character profile” (best-effort) et laisse le score vide si introuvable
+- **WHEN** the guild roster does not directly include per-member Mythic+ scores
+- **THEN** the plugin attempts to hydrate these scores via a “character profile” endpoint (best-effort) and leaves the score empty if not found
 
 ### Requirement: Configuration sécurisée de la clé API
-Le système MUST lire la clé API Raider.IO uniquement côté serveur et MUST NOT exposer la clé API dans le HTML rendu, les attributs de shortcode, ni les URLs publiques.
+The system MUST read the Raider.IO API key server-side only and MUST NOT expose the API key in rendered HTML, shortcode attributes, or public URLs.
 
 #### Scenario: Clé API fournie via constante ou filtre
-- **WHEN** la constante `GMPR_RAIDERIO_API_KEY` est définie (ou qu’un filtre fournit une clé)
-- **THEN** le client Raider.IO utilise cette clé pour authentifier les requêtes sortantes sans la refléter dans la réponse HTML
+- **WHEN** `GMPR_RAIDERIO_API_KEY` is defined (or a filter provides a key)
+- **THEN** the Raider.IO client uses that key to authenticate outbound requests without reflecting it in HTML
 
 #### Scenario: Clé API absente
-- **WHEN** aucune clé API n’est disponible
-- **THEN** le plugin rend un message d’erreur clair et n’effectue pas d’appel externe
+- **WHEN** no API key is available
+- **THEN** the plugin renders a clear error and performs no external call
 
 ### Requirement: Cache via transients
-Le système SHALL mettre en cache les résultats de Raider.IO via des transients WordPress afin de réduire les appels externes.
+The system SHALL cache Raider.IO results using WordPress transients to reduce external calls.
 
 #### Scenario: Cache hit
-- **WHEN** `[gmpr_guild]` est rendu et qu’un transient valide existe pour (region, realm, guild)
-- **THEN** le plugin utilise le cache et ne fait pas de requête HTTP externe
+- **WHEN** `[gmpr_guild]` is rendered and a valid transient exists for (region, realm, guild)
+- **THEN** the plugin uses the cache and performs no external HTTP request
 
 #### Scenario: Cache miss
-- **WHEN** `[gmpr_guild]` est rendu et qu’aucun cache valide n’existe
-- **THEN** le plugin effectue une requête HTTP externe, normalise la réponse, et stocke le résultat en cache
+- **WHEN** `[gmpr_guild]` is rendered and no valid cache exists
+- **THEN** the plugin performs an external HTTP request, normalizes the response, and stores the result in cache
 
 #### Scenario: Cache par personnage (score)
-- **WHEN** le plugin complète les scores via des appels “character profile”
-- **THEN** le plugin met en cache les scores par personnage afin d’éviter des appels répétés
+- **WHEN** the plugin hydrates scores via “character profile” calls
+- **THEN** the plugin caches scores per character to avoid repeated calls
 
 ### Requirement: Tolérance aux pannes et stale cache
-Le système SHALL gérer les erreurs réseau/HTTP Raider.IO et SHALL afficher un fallback basé sur un cache “stale” lorsque disponible.
+The system SHALL handle Raider.IO network/HTTP errors and SHALL render a fallback based on “stale cache” when available.
 
 #### Scenario: Raider.IO indisponible avec cache stale
-- **WHEN** Raider.IO retourne une erreur (timeout, DNS, 5xx) et qu’un cache “stale” existe
-- **THEN** le plugin affiche les données stale avec un avertissement discret
+- **WHEN** Raider.IO returns an error (timeout, DNS, 5xx) and a “stale cache” exists
+- **THEN** the plugin renders stale data with a subtle warning
 
 #### Scenario: Raider.IO indisponible sans cache
-- **WHEN** Raider.IO retourne une erreur (timeout, DNS, 5xx) et qu’aucun cache n’existe
-- **THEN** le plugin affiche un message d’erreur non-technique
+- **WHEN** Raider.IO returns an error (timeout, DNS, 5xx) and no cache exists
+- **THEN** the plugin renders a user-friendly error
 
 ### Requirement: Refresh admin-only
-Le système SHALL supporter un paramètre de shortcode `refresh` qui force un rechargement (bypass du cache) et MUST restreindre cette capacité aux utilisateurs disposant des droits d’administration.
+The system SHALL support a `refresh` shortcode parameter that forces a refresh (bypassing cache) and MUST restrict this capability to administrators.
 
 #### Scenario: Refresh effectué par admin
-- **WHEN** un administrateur connecté rend `[gmpr_guild refresh="1"]`
-- **THEN** le plugin ignore le cache (guilde et personnages) et refait les appels externes
+- **WHEN** a logged-in admin renders `[gmpr_guild refresh="1"]`
+- **THEN** the plugin ignores cache (guild and characters) and redoes external calls
 
 #### Scenario: Refresh ignoré pour non-admin
-- **WHEN** un utilisateur non-admin rend `[gmpr_guild refresh="1"]`
-- **THEN** le plugin se comporte comme si `refresh` était absent
+- **WHEN** a non-admin user renders `[gmpr_guild refresh="1"]`
+- **THEN** the plugin behaves as if `refresh` was absent
 
 ### Requirement: Limite temporaire du nombre de membres
-Le système SHALL limiter le nombre de membres affichés à une valeur par défaut de 20 afin de réduire les temps de réponse, et SHOULD permettre de surcharger cette limite via un filtre WordPress.
+The system SHALL limit the number of displayed members to a default value of 20 to reduce response times, and SHOULD allow overriding this limit via a WordPress filter.
 
 #### Scenario: Limite par défaut appliquée
-- **WHEN** la guilde contient plus de 20 membres
-- **THEN** le plugin affiche uniquement les 20 premiers membres selon l’ordre interne utilisé
+- **WHEN** the guild contains more than 20 members
+- **THEN** the plugin displays only the first 20 members according to its internal ordering
 
 #### Scenario: Limite surchargée via filtre
-- **WHEN** un site définit un filtre `gmpr_member_limit` retournant une valeur N
-- **THEN** le plugin limite l’affichage à N membres
+- **WHEN** a site defines a `gmpr_member_limit` filter returning a value N
+- **THEN** the plugin limits output to N members
 
 ### Requirement: Normalisation des identifiants personnage
-Le système SHALL normaliser le nom de personnage issu du roster avant d’appeler l’endpoint “character profile”.
+The system SHALL normalize roster character names before calling the “character profile” endpoint.
 
 #### Scenario: Suppression suffixe technique
-- **WHEN** un nom de personnage contient un suffixe technique de type `-<id>` (ex: `Cielã-267166348`)
-- **THEN** le plugin utilise uniquement le nom (ex: `Cielã`) pour la requête “character profile”
+- **WHEN** a character name includes a technical suffix like `-<id>` (e.g. `Cielã-267166348`)
+- **THEN** the plugin uses only the base name (e.g. `Cielã`) for the “character profile” request
 
 ### Requirement: Logging de debug sans secret
-Le système SHOULD produire des logs de debug lorsque `WP_DEBUG` est actif, et MUST NOT inclure la clé API dans les logs.
+The system SHOULD emit debug logs when `WP_DEBUG` is enabled, and MUST NOT include the API key in logs.
 
 #### Scenario: Erreur HTTP logguée
-- **WHEN** un appel Raider.IO échoue
-- **THEN** le plugin loggue le statut et un extrait de réponse sans exposer la clé API
+- **WHEN** a Raider.IO call fails
+- **THEN** the plugin logs the status and a response excerpt without exposing the API key
 

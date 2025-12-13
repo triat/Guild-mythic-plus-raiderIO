@@ -1,52 +1,52 @@
 # Guild-mythic-plus-raiderIO
-Extension WordPress (plugin) qui affiche les membres d’une guilde World of Warcraft avec leur score **Raider.IO** (Mythic+), via un shortcode.
+WordPress plugin that displays World of Warcraft guild members with their **Raider.IO** (Mythic+) score using a shortcode.
 
 ## Installation
-- Copier ce dépôt (ou son contenu) dans `wp-content/plugins/guild-mythic-plus-raiderio/`
-- Activer le plugin **Guild Mythic+ Raider.IO** dans l’admin WordPress
+- Copy this repository (or its contents) into `wp-content/plugins/guild-mythic-plus-raiderio/`
+- Activate **Guild Mythic+ Raider.IO** in the WordPress admin
 
-## Configuration (MVP sans UI admin)
-La clé API n’est **jamais** passée en attribut de shortcode.
+## Configuration (MVP without an admin UI)
+The API key is **never** passed as a shortcode attribute.
 
-### Option 1 — Constantes dans `wp-config.php` (recommandé)
-Ajouter dans `wp-config.php`:
+### Option 1 — Constants in `wp-config.php` (recommended)
+Add to `wp-config.php`:
 
 ```php
-define('GMPR_RAIDERIO_API_KEY', 'votre_cle_api');
+define('GMPR_RAIDERIO_API_KEY', 'your_api_key');
 
-// Optionnel: valeurs par défaut si vous ne voulez pas les passer dans le shortcode
+// Optional defaults if you don't want to pass them in the shortcode
 define('GMPR_REGION', 'eu');   // eu|us|kr|tw|cn
-define('GMPR_REALM', 'dalaran'); // slug
-define('GMPR_GUILD', 'Nom de Guilde'); // nom affiché
+define('GMPR_REALM', 'dalaran'); // realm slug
+define('GMPR_GUILD', 'Guild Name'); // guild name
 ```
 
-### Option 2 — Filtre WordPress (gestionnaire de secrets)
-Vous pouvez injecter la clé via le filtre `gmpr_raiderio_api_key`:
+### Option 2 — WordPress filter (secret manager)
+You can inject the key via the `gmpr_raiderio_api_key` filter:
 
 ```php
 add_filter('gmpr_raiderio_api_key', function ($key) {
-  return 'votre_cle_api';
+  return 'your_api_key';
 });
 ```
 
-## Utilisation
-Dans une page / un article:
+## Usage
+In a page / post:
 
 ```text
-[gmpr_guild region="eu" realm="dalaran" guild="Nom de Guilde"]
+[gmpr_guild region="eu" realm="dalaran" guild="Guild Name"]
 ```
 
-### Paramètres
+### Parameters
 - **region**: `eu|us|kr|tw|cn`
-- **realm**: royaume (slug)
-- **guild**: nom de guilde
-- **ttl** (optionnel): TTL du cache en secondes (min 60, max 6h, défaut ~15min)
-- **refresh** (optionnel): `1|true|yes` pour **forcer un refresh** (bypass du cache). **Actif uniquement pour un admin connecté** (sécurité).
+- **realm**: realm slug
+- **guild**: guild name
+- **ttl** (optional): cache TTL in seconds (min 60, max 6h, default ~15min)
+- **refresh** (optional): `1|true|yes` to **force a refresh** (bypass cache). **Admin-only** (security).
 
-## Dépannage (voir les erreurs)
-Le shortcode affiche volontairement un message “propre” côté utilisateur. Pour voir le détail:
+## Troubleshooting (view errors)
+The shortcode intentionally shows a user-friendly error. To see details:
 
-1) Dans `wp-config.php`, activer:
+1) In `wp-config.php`, enable:
 
 ```php
 define('WP_DEBUG', true);
@@ -54,14 +54,14 @@ define('WP_DEBUG_LOG', true);
 define('WP_DEBUG_DISPLAY', false);
 ```
 
-2) Recharger la page contenant `[gmpr_guild ...]`
+2) Reload the page containing `[gmpr_guild ...]`
 
-3) Consulter:
+3) Check:
 - **WordPress debug log**: `wp-content/debug.log`
-- **Ou** les logs PHP du serveur (selon l’hébergeur: error log Apache/Nginx/PHP-FPM)
+- **Or** your server PHP logs (Apache/Nginx/PHP-FPM depending on hosting)
 
-Le plugin loggue les erreurs Raider.IO en préfixant les lignes par: `[GMPR] Raider.IO: ...` (sans jamais écrire la clé API).
+The plugin logs Raider.IO errors prefixed with: `[GMPR] Raider.IO: ...` (it never logs the API key).
 
-### Note sur l’auth Raider.IO
-Le plugin envoie la clé via le header `Authorization: Bearer <key>` (et non en query string).
+### Raider.IO auth note
+The plugin sends the key via the `Authorization: Bearer <key>` header (not in the query string).
 
