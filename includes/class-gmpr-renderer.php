@@ -7,23 +7,6 @@ if (!defined('ABSPATH')) {
 
 final class GMPR_Renderer {
 	/**
-	 * @return string
-	 */
-	private static function initials(string $name): string {
-		$name = trim($name);
-		if ($name === '') {
-			return '';
-		}
-
-		// Take up to 2 characters (UTF-8 safe when mbstring is available).
-		if (function_exists('mb_substr')) {
-			return mb_strtoupper(mb_substr($name, 0, 2, 'UTF-8'), 'UTF-8');
-		}
-
-		return strtoupper(substr($name, 0, 2));
-	}
-
-	/**
 	 * Render the expand/collapse chevron icon.
 	 */
 	private static function render_expand_icon(): string {
@@ -77,7 +60,7 @@ final class GMPR_Renderer {
 		if (count($members) === 0) {
 			$out .= '<div class="gmpr-empty">' . esc_html__('No members found.', 'gmpr') . '</div>';
 		} else {
-			$out .= '<div class="gmpr-roster-list" aria-label="' . esc_attr__('Guild members', 'gmpr') . '">';
+			$out .= '<div class="gmpr-roster-list">';
 		}
 
 		foreach ($members as $m) {
@@ -95,7 +78,7 @@ final class GMPR_Renderer {
 			$spec = isset($m['active_spec_name']) && is_string($m['active_spec_name']) ? trim((string) $m['active_spec_name']) : '';
 			$faction = isset($m['faction']) && is_string($m['faction']) ? strtolower(trim((string) $m['faction'])) : '';
 			$meta_text = '';
-			if ($class !== '' && $spec !== '') {
+			if ($spec !== '' && $class !== '') {
 				$meta_text = $spec . ' ' . $class;
 			} elseif ($class !== '') {
 				$meta_text = $class;
@@ -113,27 +96,27 @@ final class GMPR_Renderer {
 				$faction_badge = '☠';
 			}
 
-			$out .= '<div class="gmpr-profile-card">';
+			// Profile card - matches reference HTML structure
+			$card_class = 'gmpr-profile-card';
+			$out .= '<div class="' . esc_attr($card_class) . '" data-gmpr-card="1">';
 
-			// Header row - clickable to expand/collapse (when has details)
-			$header_attrs = 'class="gmpr-profile-header"';
-			if ($has_details) {
-				$header_attrs .= ' role="button" tabindex="0" aria-expanded="false" aria-controls="gmpr-details-' . esc_attr(sanitize_title($name)) . '"';
-			}
-			$out .= '<div ' . $header_attrs . '>';
+			// Header - clickable to expand/collapse
+			$out .= '<div class="gmpr-profile-header"' . ($has_details ? ' onclick="window.gmprToggleCard(this)"' : '') . '>';
 
+			// Avatar wrapper
 			$out .= '<div class="gmpr-avatar-wrapper">';
 			$out .= '<img class="gmpr-avatar" data-gmpr-avatar="1" data-gmpr-placeholder-src="' . esc_attr($placeholder) . '" src="' . esc_url($img_src) . '" alt="' . esc_attr(sprintf(__('Avatar of %s', 'gmpr'), $name)) . '" loading="lazy" decoding="async" />';
 			if ($faction_badge !== '') {
-				$out .= '<span class="gmpr-faction-badge" aria-hidden="true">' . esc_html($faction_badge) . '</span>';
+				$out .= '<div class="gmpr-faction-badge">' . esc_html($faction_badge) . '</div>';
 			}
 			$out .= '</div>';
 
+			// Character info
 			$out .= '<div class="gmpr-character-info">';
-			$out .= '<div class="gmpr-character-name">' . esc_html($name) . '</div>';
+			$out .= '<h2 class="gmpr-character-name">' . esc_html($name) . '</h2>';
 			$out .= '<div class="gmpr-character-meta">';
 			if ($meta_text !== '') {
-				$out .= '<span class="gmpr-class-spec">' . esc_html($meta_text) . '</span>';
+				$out .= '<div class="gmpr-class-spec">' . esc_html($meta_text) . '</div>';
 			}
 			if ($realm !== '') {
 				$out .= '<span class="gmpr-realm-info">' . esc_html($realm) . '</span>';
@@ -141,8 +124,9 @@ final class GMPR_Renderer {
 			$out .= '</div>';
 			$out .= '</div>';
 
+			// Dungeon pills (compact view)
 			if (count($pills) > 0) {
-				$out .= '<div class="gmpr-dungeon-pills" aria-label="' . esc_attr__('Best Mythic+ runs', 'gmpr') . '">';
+				$out .= '<div class="gmpr-dungeon-pills">';
 				foreach ($pills as $run) {
 					if (!is_array($run)) {
 						continue;
@@ -160,7 +144,8 @@ final class GMPR_Renderer {
 				$out .= '</div>';
 			}
 
-			$out .= '<div class="gmpr-score-section" aria-label="' . esc_attr__('Mythic+ score', 'gmpr') . '">';
+			// Score section
+			$out .= '<div class="gmpr-score-section">';
 			$out .= '<div class="gmpr-score-label">' . esc_html__('M+ Score', 'gmpr') . '</div>';
 			$out .= '<div class="gmpr-score-value">' . esc_html($score) . '</div>';
 			$out .= '</div>';
@@ -172,12 +157,13 @@ final class GMPR_Renderer {
 
 			$out .= '</div>'; // end header
 
-			// Expandable content
+			// Expandable content (matches reference HTML)
 			if ($has_details) {
-				$out .= '<div class="gmpr-expandable-content" id="gmpr-details-' . esc_attr(sanitize_title($name)) . '">';
+				$out .= '<div class="gmpr-expandable-content">';
 				$out .= '<div class="gmpr-dungeons-section">';
-				$out .= '<div class="gmpr-section-title">' . esc_html__('Best Mythic+ Runs', 'gmpr') . '</div>';
+				$out .= '<h3 class="gmpr-section-title">' . esc_html__('Best Mythic+ Runs', 'gmpr') . '</h3>';
 				$out .= '<div class="gmpr-dungeons-grid">';
+
 				foreach ($details_runs as $run) {
 					if (!is_array($run)) {
 						continue;
@@ -205,13 +191,15 @@ final class GMPR_Renderer {
 					$out .= '</div>';
 					$out .= '</div>';
 				}
-				$out .= '</div>';
+
+				$out .= '</div>'; // end dungeons-grid
+				$out .= '</div>'; // end dungeons-section
 
 				// Footer with profile link
 				if ($url !== '') {
 					$out .= '<div class="gmpr-footer">';
-					$out .= '<a class="gmpr-profile-link" href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer">';
-					$out .= '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+					$out .= '<a class="gmpr-profile-link" href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">';
+					$out .= '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
 					$out .= '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>';
 					$out .= '<polyline points="15 3 21 3 21 9"/>';
 					$out .= '<line x1="10" y1="14" x2="21" y2="3"/>';
@@ -221,18 +209,17 @@ final class GMPR_Renderer {
 					$out .= '</div>';
 				}
 
-				$out .= '</div>';
-				$out .= '</div>';
+				$out .= '</div>'; // end expandable-content
 			}
 
 			$out .= '</div>'; // end profile-card
 		}
 
 		if (count($members) > 0) {
-			$out .= '</div>';
+			$out .= '</div>'; // end roster-list
 		}
 
-		$out .= '</div>';
+		$out .= '</div>'; // end wrap
 		return $out;
 	}
 

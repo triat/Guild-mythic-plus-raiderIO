@@ -5,6 +5,19 @@
   var DEFAULT_POLL_MAX = 30000;
   var REFRESH_THROTTLE_MS = 60000;
 
+  // Global toggle function for expanding/collapsing cards
+  window.gmprToggleCard = function (header) {
+    var card = header.closest('.gmpr-profile-card');
+    if (!card) return;
+
+    // Don't toggle if clicking on the profile link
+    if (event && event.target.closest('.gmpr-profile-link')) {
+      return;
+    }
+
+    card.classList.toggle('expanded');
+  };
+
   function initAvatars(wrapper) {
     var imgs = wrapper.querySelectorAll('img[data-gmpr-avatar="1"]');
     for (var i = 0; i < imgs.length; i++) {
@@ -21,52 +34,8 @@
     }
   }
 
-  function initExpandCollapse(wrapper) {
-    var headers = wrapper.querySelectorAll(".gmpr-profile-header[role='button']");
-    for (var i = 0; i < headers.length; i++) {
-      (function (header) {
-        // Click handler
-        header.addEventListener("click", function (e) {
-          // Don't toggle if clicking on the profile link
-          if (e.target.closest(".gmpr-profile-link")) {
-            return;
-          }
-          toggleExpand(header);
-        });
-
-        // Keyboard handler (Enter and Space)
-        header.addEventListener("keydown", function (e) {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            toggleExpand(header);
-          }
-        });
-      })(headers[i]);
-    }
-
-    // Prevent profile links from triggering expand
-    var links = wrapper.querySelectorAll(".gmpr-profile-link");
-    for (var j = 0; j < links.length; j++) {
-      links[j].addEventListener("click", function (e) {
-        e.stopPropagation();
-      });
-    }
-  }
-
-  function toggleExpand(header) {
-    var card = header.closest(".gmpr-profile-card");
-    if (!card) return;
-
-    var isExpanded = card.classList.contains("expanded");
-    card.classList.toggle("expanded");
-
-    // Update aria-expanded
-    header.setAttribute("aria-expanded", isExpanded ? "false" : "true");
-  }
-
   function initWrapper(wrapper) {
     initAvatars(wrapper);
-    initExpandCollapse(wrapper);
 
     // Async refresh (stale-while-revalidate): trigger refresh then poll for updated cache.
     var async = wrapper.getAttribute("data-gmpr-async") === "1";

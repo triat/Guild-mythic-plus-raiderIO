@@ -11,6 +11,7 @@ final class GMPR_Plugin {
 	public static function init(): void {
 		add_shortcode('gmpr_guild', array(__CLASS__, 'shortcode_guild'));
 		GMPR_Settings::init();
+		GMPR_Async_Refresh::init();
 	}
 
 	/**
@@ -62,41 +63,46 @@ final class GMPR_Plugin {
 		$cache = new GMPR_Cache();
 		$cache_key = $cache->build_guild_cache_key($region, $realm_slug, $guild_cache_norm);
 
+		// SWR: render fresh when available; otherwise render stale/loading and refresh asynchronously.
 		$cached = $can_refresh ? null : $cache->get_fresh($cache_key);
 		if (is_array($cached)) {
 			$cached = self::apply_member_limit($cached, $settings);
 			self::enqueue_assets();
-			return GMPR_Renderer::render_guild_table($cached, false);
+			return GMPR_Renderer::render_guild_table($cached, false, null);
 		}
 
-		$client = new GMPR_RaiderIO_Client($api_key);
-		$result = $client->fetch_guild_roster($region, $realm_slug, $guild_name);
+		$async = array(
+			'async' => true,
+			'region' => $region,
+			'realm' => $realm_slug,
+			'guild' => $guild_name,
+			'sig' => GMPR_Async_Refresh::sign_context($region, $realm_slug, $guild_name),
+			'fetched_at' => 0,
+			'refresh_needed' => true,
+		);
 
-		if (is_wp_error($result)) {
-			$stale = $cache->get_stale($cache_key);
-			if (is_array($stale)) {
+		// If we have stale cache, render it immediately and refresh in background.
+		$stale = $cache->get_stale($cache_key);
+		if (is_array($stale)) {
+			$stale = self::apply_member_limit($stale, $settings);
+			$async['fetched_at'] = isset($stale['fetched_at']) ? (int) $stale['fetched_at'] : 0;
+			$stale_fetched_at = isset($stale['fetched_at']) ? (int) $stale['fetched_at'] : 0;
+			$stale_is_recent = ($stale_fetched_at > 0) && ((time() - $stale_fetched_at) <= $ttl);
+			if ($stale_is_recent) {
+				// Treat recently-updated stale cache as fresh to avoid refresh loops when the fresh transient is missing.
 				self::enqueue_assets();
-				return GMPR_Renderer::render_guild_table($stale, true);
+				return GMPR_Renderer::render_guild_table($stale, false, null);
 			}
 
-			return GMPR_Renderer::render_error(
-				__('Raider.IO is currently unavailable. Please try again later.', 'gmpr')
-			);
+			GMPR_Async_Refresh::schedule_refresh($region, $realm_slug, $guild_name, 60);
+			self::enqueue_assets();
+			return GMPR_Renderer::render_guild_table($stale, true, $async);
 		}
 
-		$normalized = GMPR_RaiderIO_Client::normalize_guild_roster_response($result, $region, $realm_slug);
-
-		// Temporary limit to speed up page loads (also reduces characters/profile calls).
-		$normalized = self::apply_member_limit($normalized, $settings);
-
-		// Hydrate per-character Mythic+ scores (character profile endpoint) when needed.
-		$normalized = self::hydrate_member_scores($normalized, $client, $cache, $region, $realm_slug, $ttl, $can_refresh);
-
-		$cache->set_fresh($cache_key, $normalized, $ttl);
-		$cache->set_stale($cache_key, $normalized);
-
+		// Cold start: avoid blocking Raider.IO calls during render.
+		GMPR_Async_Refresh::schedule_refresh($region, $realm_slug, $guild_name, 60);
 		self::enqueue_assets();
-		return GMPR_Renderer::render_guild_table($normalized, false);
+		return GMPR_Renderer::render_loading($async);
 	}
 
 	/**
@@ -125,8 +131,10 @@ final class GMPR_Plugin {
 
 			$needs_score = !(isset($m['mplus_score']) && is_numeric($m['mplus_score']));
 			$needs_avatar = !(isset($m['avatar_url']) && is_string($m['avatar_url']) && trim((string) $m['avatar_url']) !== '');
+			$needs_best_runs = !(isset($m['best_runs']) && is_array($m['best_runs']) && count($m['best_runs']) > 0);
+			$needs_meta = !(isset($m['class']) && is_string($m['class']) && trim((string) $m['class']) !== '');
 
-			if (!$needs_score && !$needs_avatar) {
+			if (!$needs_score && !$needs_avatar && !$needs_best_runs && !$needs_meta) {
 				continue;
 			}
 
@@ -153,7 +161,23 @@ final class GMPR_Plugin {
 					$members[$i]['avatar_url'] = (string) $cached_char['avatar_url'];
 					$needs_avatar = false;
 				}
-				if (!$needs_score && !$needs_avatar) {
+				if ($needs_best_runs && isset($cached_char['best_runs']) && is_array($cached_char['best_runs']) && count($cached_char['best_runs']) > 0) {
+					$members[$i]['best_runs'] = $cached_char['best_runs'];
+					$needs_best_runs = false;
+				}
+				if ($needs_meta) {
+					if (isset($cached_char['class']) && is_string($cached_char['class']) && trim((string) $cached_char['class']) !== '') {
+						$members[$i]['class'] = (string) $cached_char['class'];
+						$needs_meta = false;
+					}
+					if (isset($cached_char['active_spec_name']) && is_string($cached_char['active_spec_name']) && trim((string) $cached_char['active_spec_name']) !== '') {
+						$members[$i]['active_spec_name'] = (string) $cached_char['active_spec_name'];
+					}
+					if (isset($cached_char['faction']) && is_string($cached_char['faction']) && trim((string) $cached_char['faction']) !== '') {
+						$members[$i]['faction'] = (string) $cached_char['faction'];
+					}
+				}
+				if (!$needs_score && !$needs_avatar && !$needs_best_runs && !$needs_meta) {
 					continue;
 				}
 			}
@@ -167,6 +191,20 @@ final class GMPR_Plugin {
 					}
 					if ($needs_avatar && isset($stale_char['avatar_url']) && is_string($stale_char['avatar_url']) && trim($stale_char['avatar_url']) !== '') {
 						$members[$i]['avatar_url'] = (string) $stale_char['avatar_url'];
+					}
+					if ($needs_best_runs && isset($stale_char['best_runs']) && is_array($stale_char['best_runs']) && count($stale_char['best_runs']) > 0) {
+						$members[$i]['best_runs'] = $stale_char['best_runs'];
+					}
+					if ($needs_meta) {
+						if (isset($stale_char['class']) && is_string($stale_char['class']) && trim((string) $stale_char['class']) !== '') {
+							$members[$i]['class'] = (string) $stale_char['class'];
+						}
+						if (isset($stale_char['active_spec_name']) && is_string($stale_char['active_spec_name']) && trim((string) $stale_char['active_spec_name']) !== '') {
+							$members[$i]['active_spec_name'] = (string) $stale_char['active_spec_name'];
+						}
+						if (isset($stale_char['faction']) && is_string($stale_char['faction']) && trim((string) $stale_char['faction']) !== '') {
+							$members[$i]['faction'] = (string) $stale_char['faction'];
+						}
 					}
 				}
 				continue;
@@ -182,9 +220,23 @@ final class GMPR_Plugin {
 				$members[$i]['avatar_url'] = $avatar;
 			}
 
+			$best_runs = self::extract_character_best_runs($char);
+			if (count($best_runs) > 0) {
+				$members[$i]['best_runs'] = $best_runs;
+			}
+
+			$meta = self::extract_character_meta($char);
+			foreach ($meta as $k => $v) {
+				$members[$i][$k] = $v;
+			}
+
 			$cache_value = array(
 				'mplus_score' => $score,
 				'avatar_url'  => $avatar,
+				'best_runs' => $best_runs,
+				'class' => isset($meta['class']) ? (string) $meta['class'] : '',
+				'active_spec_name' => isset($meta['active_spec_name']) ? (string) $meta['active_spec_name'] : '',
+				'faction' => isset($meta['faction']) ? (string) $meta['faction'] : '',
 			);
 			$cache->set_fresh($char_key, $cache_value, $ttl);
 			$cache->set_stale($char_key, $cache_value);
@@ -258,20 +310,103 @@ final class GMPR_Plugin {
 		return '';
 	}
 
+	/**
+	 * @param array<string, mixed> $char
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function extract_character_best_runs(array $char): array {
+		if (!isset($char['mythic_plus_best_runs']) || !is_array($char['mythic_plus_best_runs'])) {
+			return array();
+		}
+
+		$out = array();
+		foreach ($char['mythic_plus_best_runs'] as $run) {
+			if (!is_array($run)) {
+				continue;
+			}
+
+			$short = isset($run['short_name']) && is_string($run['short_name']) ? trim((string) $run['short_name']) : '';
+			$level = isset($run['mythic_level']) && is_numeric($run['mythic_level']) ? (int) $run['mythic_level'] : 0;
+			if ($short === '' || $level <= 0) {
+				continue;
+			}
+
+			$out[] = array(
+				'dungeon' => isset($run['dungeon']) && is_string($run['dungeon']) ? (string) $run['dungeon'] : '',
+				'short_name' => $short,
+				'mythic_level' => $level,
+				'score' => isset($run['score']) && is_numeric($run['score']) ? (float) $run['score'] : null,
+				'background_image_url' => isset($run['background_image_url']) && is_string($run['background_image_url']) ? trim((string) $run['background_image_url']) : '',
+				'url' => isset($run['url']) && is_string($run['url']) ? (string) $run['url'] : '',
+			);
+		}
+
+		return $out;
+	}
+
+	/**
+	 * @param array<string, mixed> $char
+	 * @return array<string, string>
+	 */
+	private static function extract_character_meta(array $char): array {
+		$out = array();
+
+		if (isset($char['class']) && is_string($char['class']) && trim((string) $char['class']) !== '') {
+			$out['class'] = trim((string) $char['class']);
+		}
+		if (isset($char['active_spec_name']) && is_string($char['active_spec_name']) && trim((string) $char['active_spec_name']) !== '') {
+			$out['active_spec_name'] = trim((string) $char['active_spec_name']);
+		}
+		if (isset($char['faction']) && is_string($char['faction']) && trim((string) $char['faction']) !== '') {
+			$out['faction'] = trim((string) $char['faction']);
+		}
+
+		return $out;
+	}
+
 	private static function enqueue_assets(): void {
+		$css_ver = defined('GMPR_VERSION') ? GMPR_VERSION : '0';
+		$js_ver = defined('GMPR_VERSION') ? GMPR_VERSION : '0';
+
+		if (defined('GMPR_PLUGIN_DIR')) {
+			$css_path = GMPR_PLUGIN_DIR . 'assets/gmpr.css';
+			$js_path = GMPR_PLUGIN_DIR . 'assets/gmpr.js';
+			if (file_exists($css_path)) {
+				$css_ver = $css_ver . '-' . (string) filemtime($css_path);
+			}
+			if (file_exists($js_path)) {
+				$js_ver = $js_ver . '-' . (string) filemtime($js_path);
+			}
+		}
+
 		wp_enqueue_style(
 			'gmpr-guild',
 			GMPR_PLUGIN_URL . 'assets/gmpr.css',
 			array(),
-			GMPR_VERSION
+			$css_ver
 		);
 
 		wp_enqueue_script(
 			'gmpr-guild',
 			GMPR_PLUGIN_URL . 'assets/gmpr.js',
 			array(),
-			GMPR_VERSION,
+			$js_ver,
 			true
+		);
+
+		wp_localize_script(
+			'gmpr-guild',
+			'gmprData',
+			array(
+				// Provide full endpoint URLs so JS works with both pretty permalinks (/wp-json/...)
+				// and plain permalinks (index.php?rest_route=...).
+				'rosterUrl' => esc_url_raw(rest_url('gmpr/v1/roster')),
+				'refreshUrl' => esc_url_raw(rest_url('gmpr/v1/refresh')),
+				// Backward compatibility: keep restBase for older JS versions.
+				'restBase' => esc_url_raw(rest_url('gmpr/v1')),
+				'pollIntervalMs' => 2000,
+				'pollMaxMs' => 30000,
+			)
 		);
 	}
 

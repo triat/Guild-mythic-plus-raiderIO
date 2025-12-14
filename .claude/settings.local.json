@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(yes:*)",
+      "Bash(make clean:*)",
+      "Bash(make zip:*)"
+    ]
+  }
+}
