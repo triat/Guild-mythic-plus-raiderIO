@@ -1,38 +1,9 @@
 (function () {
   "use strict";
 
-  var STORAGE_KEY = "gmpr_roster_view"; // "inline" | "cards"
   var DEFAULT_POLL_INTERVAL = 2000;
   var DEFAULT_POLL_MAX = 30000;
   var REFRESH_THROTTLE_MS = 60000;
-
-  function getStoredView() {
-    try {
-      var v = window.localStorage.getItem(STORAGE_KEY);
-      // Backward compatibility: old value "table" maps to "inline".
-      if (v === "table") return "inline";
-      return v === "cards" ? "cards" : v === "inline" ? "inline" : null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function setStoredView(view) {
-    try {
-      window.localStorage.setItem(STORAGE_KEY, view);
-    } catch (e) {
-      // ignore
-    }
-  }
-
-  function setView(wrapper, view) {
-    wrapper.setAttribute("data-gmpr-view", view);
-
-    var btnInline = wrapper.querySelector('[data-gmpr-view-btn="inline"]');
-    var btnCards = wrapper.querySelector('[data-gmpr-view-btn="cards"]');
-    if (btnInline) btnInline.setAttribute("aria-pressed", view === "inline" ? "true" : "false");
-    if (btnCards) btnCards.setAttribute("aria-pressed", view === "cards" ? "true" : "false");
-  }
 
   function initAvatars(wrapper) {
     var imgs = wrapper.querySelectorAll('img[data-gmpr-avatar="1"]');
@@ -50,24 +21,52 @@
     }
   }
 
-  function initWrapper(wrapper) {
-    var stored = getStoredView();
-    var initial = stored || wrapper.getAttribute("data-gmpr-view") || "inline";
-    initial = initial === "cards" ? "cards" : "inline";
-    setView(wrapper, initial);
+  function initExpandCollapse(wrapper) {
+    var headers = wrapper.querySelectorAll(".gmpr-profile-header[role='button']");
+    for (var i = 0; i < headers.length; i++) {
+      (function (header) {
+        // Click handler
+        header.addEventListener("click", function (e) {
+          // Don't toggle if clicking on the profile link
+          if (e.target.closest(".gmpr-profile-link")) {
+            return;
+          }
+          toggleExpand(header);
+        });
 
-    var btns = wrapper.querySelectorAll("[data-gmpr-view-btn]");
-    for (var i = 0; i < btns.length; i++) {
-      btns[i].addEventListener("click", function (e) {
-        e.preventDefault();
-        var view = this.getAttribute("data-gmpr-view-btn");
-        view = view === "cards" ? "cards" : "inline";
-        setView(wrapper, view);
-        setStoredView(view);
-      });
+        // Keyboard handler (Enter and Space)
+        header.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggleExpand(header);
+          }
+        });
+      })(headers[i]);
     }
 
+    // Prevent profile links from triggering expand
+    var links = wrapper.querySelectorAll(".gmpr-profile-link");
+    for (var j = 0; j < links.length; j++) {
+      links[j].addEventListener("click", function (e) {
+        e.stopPropagation();
+      });
+    }
+  }
+
+  function toggleExpand(header) {
+    var card = header.closest(".gmpr-profile-card");
+    if (!card) return;
+
+    var isExpanded = card.classList.contains("expanded");
+    card.classList.toggle("expanded");
+
+    // Update aria-expanded
+    header.setAttribute("aria-expanded", isExpanded ? "false" : "true");
+  }
+
+  function initWrapper(wrapper) {
     initAvatars(wrapper);
+    initExpandCollapse(wrapper);
 
     // Async refresh (stale-while-revalidate): trigger refresh then poll for updated cache.
     var async = wrapper.getAttribute("data-gmpr-async") === "1";
@@ -251,5 +250,3 @@
     initAll(document);
   });
 })();
-
-

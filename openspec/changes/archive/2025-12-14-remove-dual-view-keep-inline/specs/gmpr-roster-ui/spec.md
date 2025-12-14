@@ -1,29 +1,18 @@
-# gmpr-roster-ui Specification
+## REMOVED Requirements
 
-## Purpose
-TBD - created by archiving change add-roster-view-toggle. Update Purpose after archive.
-## Requirements
-### Requirement: Progressive enhancement fallback
-The system SHALL remain usable without JavaScript, displaying expanded content by default.
+### Requirement: Dual roster views
+**Reason**: Simplifying to a single inline expandable view for better UX and reduced complexity.
+**Migration**: Inline view becomes the only view; cards view is removed entirely.
 
-#### Scenario: JS disabled shows expanded content
-- **WHEN** JavaScript is disabled
-- **THEN** all profile expandable sections are visible (not collapsed) so content remains accessible
+### Requirement: Always-visible view toggle
+**Reason**: No longer needed since only one view exists.
+**Migration**: Toggle buttons are removed from the UI.
 
-#### Scenario: JS enabled enables collapse
-- **WHEN** JavaScript is enabled
-- **THEN** profiles start collapsed and can be expanded via click
+### Requirement: Persisted view preference
+**Reason**: No view preference needed with single view.
+**Migration**: localStorage key `gmpr_roster_view` is no longer used.
 
-### Requirement: Accessible controls
-The system SHALL provide accessible expand/collapse controls (keyboard-operable and screen-reader friendly).
-
-#### Scenario: Keyboard navigation for expand
-- **WHEN** a keyboard-only user focuses the header row and presses Enter or Space
-- **THEN** the expandable section toggles open/closed
-
-#### Scenario: Screen reader announces state
-- **WHEN** a screen reader user interacts with the expand control
-- **THEN** the current expanded/collapsed state is announced via `aria-expanded` attribute
+## ADDED Requirements
 
 ### Requirement: Single expandable inline view
 The system SHALL provide a single inline roster view where each member row can expand to show detailed Mythic+ run information.
@@ -69,3 +58,26 @@ The system SHALL ensure the inline view remains fully usable on mobile devices.
 - **WHEN** viewport width is 640px or less
 - **THEN** the header row content wraps appropriately and the profile link becomes full-width
 
+## MODIFIED Requirements
+
+### Requirement: Progressive enhancement fallback
+The system SHALL remain usable without JavaScript, displaying expanded content by default.
+
+#### Scenario: JS disabled shows expanded content
+- **WHEN** JavaScript is disabled
+- **THEN** all profile expandable sections are visible (not collapsed) so content remains accessible
+
+#### Scenario: JS enabled enables collapse
+- **WHEN** JavaScript is enabled
+- **THEN** profiles start collapsed and can be expanded via click
+
+### Requirement: Accessible controls
+The system SHALL provide accessible expand/collapse controls (keyboard-operable and screen-reader friendly).
+
+#### Scenario: Keyboard navigation for expand
+- **WHEN** a keyboard-only user focuses the header row and presses Enter or Space
+- **THEN** the expandable section toggles open/closed
+
+#### Scenario: Screen reader announces state
+- **WHEN** a screen reader user interacts with the expand control
+- **THEN** the current expanded/collapsed state is announced via `aria-expanded` attribute
