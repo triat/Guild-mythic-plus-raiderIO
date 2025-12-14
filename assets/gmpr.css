@@ -39,31 +39,31 @@
 }
 
 /* Profile Card */
-.gmpr-profile-card {
-  background: var(--gmpr-dark-card);
-  border-radius: 12px;
-  overflow: hidden;
+.gmpr.gmpr-wrap .gmpr-profile-card {
+  background: var(--gmpr-dark-card) !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
   box-shadow:
     0 0 40px rgba(220, 165, 74, 0.08),
     0 15px 40px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--gmpr-border-accent);
-  transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid var(--gmpr-border-accent) !important;
+  transition: box-shadow 0.3s ease, border-color 0.3s ease !important;
 }
 
-.gmpr-profile-card:hover {
+.gmpr.gmpr-wrap .gmpr-profile-card:hover {
   box-shadow:
     0 0 50px rgba(220, 165, 74, 0.12),
     0 20px 50px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  border-color: rgba(220, 165, 74, 0.25);
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(220, 165, 74, 0.25) !important;
 }
 
-.gmpr-profile-card.expanded {
+.gmpr.gmpr-wrap .gmpr-profile-card.expanded {
   box-shadow:
     0 0 60px rgba(220, 165, 74, 0.15),
     0 25px 60px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
 }
 
 /* Header */
@@ -133,14 +133,17 @@
   min-width: 0;
 }
 
-.gmpr-character-name {
-  font-size: 1.25rem;
-  font-weight: 800;
-  color: var(--gmpr-text-primary);
-  text-shadow: 0 0 20px rgba(220, 165, 74, 0.4);
-  letter-spacing: 0.3px;
-  line-height: 1.2;
-  margin: 0;
+.gmpr.gmpr-wrap .gmpr-character-name {
+  font-size: 1.25rem !important;
+  font-weight: 800 !important;
+  color: var(--gmpr-text-primary) !important;
+  text-shadow: 0 0 20px rgba(220, 165, 74, 0.4) !important;
+  letter-spacing: 0.3px !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-transform: none !important;
+  font-family: inherit !important;
 }
 
 .gmpr-character-meta {
@@ -254,16 +257,18 @@
   background: var(--gmpr-dark-card);
 }
 
-.gmpr-section-title {
-  font-size: 0.75rem;
-  font-weight: 800;
-  color: var(--gmpr-accent);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  margin: 0 0 16px 0;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+.gmpr.gmpr-wrap .gmpr-section-title {
+  font-size: 0.75rem !important;
+  font-weight: 800 !important;
+  color: var(--gmpr-accent) !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.6px !important;
+  margin: 0 0 16px 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  font-family: inherit !important;
 }
 
 .gmpr-section-title::after {
@@ -364,32 +369,35 @@
   justify-content: center;
 }
 
-.gmpr-profile-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
-  padding: 10px 24px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: #1a1a1a;
-  background: linear-gradient(135deg, var(--gmpr-accent), #b8842f);
-  box-shadow: 0 4px 15px rgba(220, 165, 74, 0.25);
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  transition: all 0.25s ease;
+.gmpr.gmpr-wrap .gmpr-profile-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  text-decoration: none !important;
+  padding: 10px 24px !important;
+  border-radius: 6px !important;
+  font-weight: 600 !important;
+  font-size: 0.85rem !important;
+  letter-spacing: 0.5px !important;
+  text-transform: uppercase !important;
+  color: #1a1a1a !important;
+  background: linear-gradient(135deg, var(--gmpr-accent), #b8842f) !important;
+  box-shadow: 0 4px 15px rgba(220, 165, 74, 0.25) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  transition: all 0.25s ease !important;
+  line-height: 1 !important;
 }
 
-.gmpr-profile-link:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(220, 165, 74, 0.4);
+.gmpr.gmpr-wrap .gmpr-profile-link:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 6px 20px rgba(220, 165, 74, 0.4) !important;
+  color: #1a1a1a !important;
+  text-decoration: none !important;
 }
 
-.gmpr-profile-link svg {
-  width: 14px;
-  height: 14px;
+.gmpr.gmpr-wrap .gmpr-profile-link svg {
+  width: 14px !important;
+  height: 14px !important;
 }
 
 /* Mobile Responsive */
