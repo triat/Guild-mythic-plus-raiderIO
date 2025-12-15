@@ -173,6 +173,9 @@ final class GMPR_Plugin {
 					if (isset($cached_char['active_spec_name']) && is_string($cached_char['active_spec_name']) && trim((string) $cached_char['active_spec_name']) !== '') {
 						$members[$i]['active_spec_name'] = (string) $cached_char['active_spec_name'];
 					}
+					if (isset($cached_char['active_spec_role']) && is_string($cached_char['active_spec_role']) && trim((string) $cached_char['active_spec_role']) !== '') {
+						$members[$i]['active_spec_role'] = (string) $cached_char['active_spec_role'];
+					}
 					if (isset($cached_char['faction']) && is_string($cached_char['faction']) && trim((string) $cached_char['faction']) !== '') {
 						$members[$i]['faction'] = (string) $cached_char['faction'];
 					}
@@ -201,6 +204,9 @@ final class GMPR_Plugin {
 						}
 						if (isset($stale_char['active_spec_name']) && is_string($stale_char['active_spec_name']) && trim((string) $stale_char['active_spec_name']) !== '') {
 							$members[$i]['active_spec_name'] = (string) $stale_char['active_spec_name'];
+						}
+						if (isset($stale_char['active_spec_role']) && is_string($stale_char['active_spec_role']) && trim((string) $stale_char['active_spec_role']) !== '') {
+							$members[$i]['active_spec_role'] = (string) $stale_char['active_spec_role'];
 						}
 						if (isset($stale_char['faction']) && is_string($stale_char['faction']) && trim((string) $stale_char['faction']) !== '') {
 							$members[$i]['faction'] = (string) $stale_char['faction'];
@@ -236,6 +242,7 @@ final class GMPR_Plugin {
 				'best_runs' => $best_runs,
 				'class' => isset($meta['class']) ? (string) $meta['class'] : '',
 				'active_spec_name' => isset($meta['active_spec_name']) ? (string) $meta['active_spec_name'] : '',
+				'active_spec_role' => isset($meta['active_spec_role']) ? (string) $meta['active_spec_role'] : '',
 				'faction' => isset($meta['faction']) ? (string) $meta['faction'] : '',
 			);
 			$cache->set_fresh($char_key, $cache_value, $ttl);
@@ -356,6 +363,9 @@ final class GMPR_Plugin {
 		}
 		if (isset($char['active_spec_name']) && is_string($char['active_spec_name']) && trim((string) $char['active_spec_name']) !== '') {
 			$out['active_spec_name'] = trim((string) $char['active_spec_name']);
+		}
+		if (isset($char['active_spec_role']) && is_string($char['active_spec_role']) && trim((string) $char['active_spec_role']) !== '') {
+			$out['active_spec_role'] = strtolower(trim((string) $char['active_spec_role']));
 		}
 		if (isset($char['faction']) && is_string($char['faction']) && trim((string) $char['faction']) !== '') {
 			$out['faction'] = trim((string) $char['faction']);

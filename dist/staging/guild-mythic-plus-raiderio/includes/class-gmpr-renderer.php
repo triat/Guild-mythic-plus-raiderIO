@@ -7,6 +7,23 @@ if (!defined('ABSPATH')) {
 
 final class GMPR_Renderer {
 	/**
+	 * @return string
+	 */
+	private static function initials(string $name): string {
+		$name = trim($name);
+		if ($name === '') {
+			return '';
+		}
+
+		// Take up to 2 characters (UTF-8 safe when mbstring is available).
+		if (function_exists('mb_substr')) {
+			return mb_strtoupper(mb_substr($name, 0, 2, 'UTF-8'), 'UTF-8');
+		}
+
+		return strtoupper(substr($name, 0, 2));
+	}
+
+	/**
 	 * Render the expand/collapse chevron icon.
 	 */
 	private static function render_expand_icon(): string {
@@ -60,7 +77,55 @@ final class GMPR_Renderer {
 		if (count($members) === 0) {
 			$out .= '<div class="gmpr-empty">' . esc_html__('No members found.', 'gmpr') . '</div>';
 		} else {
-			$out .= '<div class="gmpr-roster-list">';
+			// Filter and sort toolbar
+			$out .= '<div class="gmpr-filters">';
+
+			$out .= '<div class="gmpr-filter-group">';
+			$out .= '<label for="gmpr-filter-role">' . esc_html__('Role:', 'gmpr') . '</label>';
+			$out .= '<select id="gmpr-filter-role" class="gmpr-filter-control">';
+			$out .= '<option value="all">' . esc_html__('All Roles', 'gmpr') . '</option>';
+			$out .= '<option value="tank">' . esc_html__('Tank', 'gmpr') . '</option>';
+			$out .= '<option value="healing">' . esc_html__('Healer', 'gmpr') . '</option>';
+			$out .= '<option value="dps">' . esc_html__('DPS', 'gmpr') . '</option>';
+			$out .= '</select>';
+			$out .= '</div>';
+
+			$out .= '<div class="gmpr-filter-group">';
+			$out .= '<label for="gmpr-filter-name">' . esc_html__('Name:', 'gmpr') . '</label>';
+			$out .= '<input type="text" id="gmpr-filter-name" class="gmpr-filter-control" placeholder="' . esc_attr__('Search...', 'gmpr') . '" />';
+			$out .= '</div>';
+
+			$out .= '<div class="gmpr-filter-group">';
+			$out .= '<label for="gmpr-filter-score-min">' . esc_html__('Min Score:', 'gmpr') . '</label>';
+			$out .= '<input type="number" id="gmpr-filter-score-min" class="gmpr-filter-control" placeholder="0" min="0" step="100" />';
+			$out .= '</div>';
+
+			$out .= '<div class="gmpr-filter-group">';
+			$out .= '<label for="gmpr-filter-score-max">' . esc_html__('Max Score:', 'gmpr') . '</label>';
+			$out .= '<input type="number" id="gmpr-filter-score-max" class="gmpr-filter-control" placeholder="9999" min="0" step="100" />';
+			$out .= '</div>';
+
+			$out .= '<div class="gmpr-filter-group">';
+			$out .= '<label for="gmpr-sort-by">' . esc_html__('Sort:', 'gmpr') . '</label>';
+			$out .= '<select id="gmpr-sort-by" class="gmpr-filter-control">';
+			$out .= '<option value="none">' . esc_html__('Default', 'gmpr') . '</option>';
+			$out .= '<option value="name-asc">' . esc_html__('Name (A-Z)', 'gmpr') . '</option>';
+			$out .= '<option value="name-desc">' . esc_html__('Name (Z-A)', 'gmpr') . '</option>';
+			$out .= '<option value="score-desc">' . esc_html__('Score (High to Low)', 'gmpr') . '</option>';
+			$out .= '<option value="score-asc">' . esc_html__('Score (Low to High)', 'gmpr') . '</option>';
+			$out .= '</select>';
+			$out .= '</div>';
+
+			$out .= '<div class="gmpr-filter-group">';
+			$out .= '<label>&nbsp;</label>';
+			$out .= '<button id="gmpr-clear-filters" class="gmpr-clear-btn" type="button">' . esc_html__('Clear', 'gmpr') . '</button>';
+			$out .= '</div>';
+
+			$out .= '<div class="gmpr-results-count" id="gmpr-results-count"></div>';
+
+			$out .= '</div>'; // end filters
+
+			$out .= '<div class="gmpr-roster-list" aria-label="' . esc_attr__('Guild members', 'gmpr') . '">';
 		}
 
 		foreach ($members as $m) {
@@ -78,7 +143,7 @@ final class GMPR_Renderer {
 			$spec = isset($m['active_spec_name']) && is_string($m['active_spec_name']) ? trim((string) $m['active_spec_name']) : '';
 			$faction = isset($m['faction']) && is_string($m['faction']) ? strtolower(trim((string) $m['faction'])) : '';
 			$meta_text = '';
-			if ($spec !== '' && $class !== '') {
+			if ($class !== '' && $spec !== '') {
 				$meta_text = $spec . ' ' . $class;
 			} elseif ($class !== '') {
 				$meta_text = $class;
@@ -96,27 +161,36 @@ final class GMPR_Renderer {
 				$faction_badge = '☠';
 			}
 
-			// Profile card - matches reference HTML structure
-			$card_class = 'gmpr-profile-card';
-			$out .= '<div class="' . esc_attr($card_class) . '" data-gmpr-card="1">';
+			// Extract data attributes for filtering/sorting
+			$role = isset($m['active_spec_role']) && is_string($m['active_spec_role']) ? strtolower(trim((string) $m['active_spec_role'])) : '';
+			$name_lower = function_exists('mb_strtolower') ? mb_strtolower($name, 'UTF-8') : strtolower($name);
+			$score_numeric = isset($m['mplus_score']) && is_numeric($m['mplus_score']) ? (int) round((float) $m['mplus_score']) : 0;
 
-			// Header - clickable to expand/collapse
-			$out .= '<div class="gmpr-profile-header"' . ($has_details ? ' onclick="window.gmprToggleCard(this)"' : '') . '>';
+			$out .= '<div class="gmpr-profile-card"'
+				. ' data-role="' . esc_attr($role) . '"'
+				. ' data-name="' . esc_attr($name_lower) . '"'
+				. ' data-score="' . esc_attr((string) $score_numeric) . '"'
+				. '>';
 
-			// Avatar wrapper
+			// Header row - clickable to expand/collapse (when has details)
+			$header_attrs = 'class="gmpr-profile-header"';
+			if ($has_details) {
+				$header_attrs .= ' role="button" tabindex="0" aria-expanded="false" aria-controls="gmpr-details-' . esc_attr(sanitize_title($name)) . '"';
+			}
+			$out .= '<div ' . $header_attrs . '>';
+
 			$out .= '<div class="gmpr-avatar-wrapper">';
 			$out .= '<img class="gmpr-avatar" data-gmpr-avatar="1" data-gmpr-placeholder-src="' . esc_attr($placeholder) . '" src="' . esc_url($img_src) . '" alt="' . esc_attr(sprintf(__('Avatar of %s', 'gmpr'), $name)) . '" loading="lazy" decoding="async" />';
 			if ($faction_badge !== '') {
-				$out .= '<div class="gmpr-faction-badge">' . esc_html($faction_badge) . '</div>';
+				$out .= '<span class="gmpr-faction-badge" aria-hidden="true">' . esc_html($faction_badge) . '</span>';
 			}
 			$out .= '</div>';
 
-			// Character info
 			$out .= '<div class="gmpr-character-info">';
-			$out .= '<h2 class="gmpr-character-name">' . esc_html($name) . '</h2>';
+			$out .= '<div class="gmpr-character-name">' . esc_html($name) . '</div>';
 			$out .= '<div class="gmpr-character-meta">';
 			if ($meta_text !== '') {
-				$out .= '<div class="gmpr-class-spec">' . esc_html($meta_text) . '</div>';
+				$out .= '<span class="gmpr-class-spec">' . esc_html($meta_text) . '</span>';
 			}
 			if ($realm !== '') {
 				$out .= '<span class="gmpr-realm-info">' . esc_html($realm) . '</span>';
@@ -124,9 +198,8 @@ final class GMPR_Renderer {
 			$out .= '</div>';
 			$out .= '</div>';
 
-			// Dungeon pills (compact view)
 			if (count($pills) > 0) {
-				$out .= '<div class="gmpr-dungeon-pills">';
+				$out .= '<div class="gmpr-dungeon-pills" aria-label="' . esc_attr__('Best Mythic+ runs', 'gmpr') . '">';
 				foreach ($pills as $run) {
 					if (!is_array($run)) {
 						continue;
@@ -144,8 +217,7 @@ final class GMPR_Renderer {
 				$out .= '</div>';
 			}
 
-			// Score section
-			$out .= '<div class="gmpr-score-section">';
+			$out .= '<div class="gmpr-score-section" aria-label="' . esc_attr__('Mythic+ score', 'gmpr') . '">';
 			$out .= '<div class="gmpr-score-label">' . esc_html__('M+ Score', 'gmpr') . '</div>';
 			$out .= '<div class="gmpr-score-value">' . esc_html($score) . '</div>';
 			$out .= '</div>';
@@ -157,13 +229,12 @@ final class GMPR_Renderer {
 
 			$out .= '</div>'; // end header
 
-			// Expandable content (matches reference HTML)
+			// Expandable content
 			if ($has_details) {
-				$out .= '<div class="gmpr-expandable-content">';
+				$out .= '<div class="gmpr-expandable-content" id="gmpr-details-' . esc_attr(sanitize_title($name)) . '">';
 				$out .= '<div class="gmpr-dungeons-section">';
-				$out .= '<h3 class="gmpr-section-title">' . esc_html__('Best Mythic+ Runs', 'gmpr') . '</h3>';
+				$out .= '<div class="gmpr-section-title">' . esc_html__('Best Mythic+ Runs', 'gmpr') . '</div>';
 				$out .= '<div class="gmpr-dungeons-grid">';
-
 				foreach ($details_runs as $run) {
 					if (!is_array($run)) {
 						continue;
@@ -191,15 +262,13 @@ final class GMPR_Renderer {
 					$out .= '</div>';
 					$out .= '</div>';
 				}
-
-				$out .= '</div>'; // end dungeons-grid
-				$out .= '</div>'; // end dungeons-section
+				$out .= '</div>';
 
 				// Footer with profile link
 				if ($url !== '') {
 					$out .= '<div class="gmpr-footer">';
-					$out .= '<a class="gmpr-profile-link" href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()">';
-					$out .= '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+					$out .= '<a class="gmpr-profile-link" href="' . esc_url($url) . '" target="_blank" rel="noopener noreferrer">';
+					$out .= '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
 					$out .= '<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>';
 					$out .= '<polyline points="15 3 21 3 21 9"/>';
 					$out .= '<line x1="10" y1="14" x2="21" y2="3"/>';
@@ -209,7 +278,8 @@ final class GMPR_Renderer {
 					$out .= '</div>';
 				}
 
-				$out .= '</div>'; // end expandable-content
+				$out .= '</div>';
+				$out .= '</div>';
 			}
 
 			$out .= '</div>'; // end profile-card
@@ -217,6 +287,9 @@ final class GMPR_Renderer {
 
 		if (count($members) > 0) {
 			$out .= '</div>'; // end roster-list
+			$out .= '<div class="gmpr-filter-empty" id="gmpr-filter-empty" style="display:none;">';
+			$out .= esc_html__('No characters match your filters.', 'gmpr');
+			$out .= '</div>';
 		}
 
 		$out .= '</div>'; // end wrap

@@ -1,5 +1,6 @@
 .gmpr.gmpr-wrap {
   margin: 1rem 0;
+  /* Theme variables (scoped to the plugin container). */
   --gmpr-accent: #dca54a;
   --gmpr-dark-base: #0d0d0d;
   --gmpr-dark-card: #151515;
@@ -8,6 +9,7 @@
   --gmpr-text-muted: #9a9a9a;
   --gmpr-border-accent: rgba(220, 165, 74, 0.18);
   --gmpr-border-soft: rgba(255, 255, 255, 0.08);
+  --gmpr-score-pink: #e2588d;
 }
 
 .gmpr-error {
@@ -25,48 +27,41 @@
   margin-bottom: 0.75rem;
 }
 
-.gmpr-empty {
-  padding: 1rem;
-  text-align: center;
-  color: var(--gmpr-text-muted);
-}
-
-/* Roster List */
 .gmpr-roster-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
-/* Profile Card */
-.gmpr.gmpr-wrap .gmpr-profile-card {
-  background: var(--gmpr-dark-card) !important;
-  border-radius: 12px !important;
-  overflow: hidden !important;
+/* Profile Card - Individual character card */
+.gmpr-profile-card {
+  background: var(--gmpr-dark-card);
+  border-radius: 12px;
+  overflow: hidden;
   box-shadow:
     0 0 40px rgba(220, 165, 74, 0.08),
     0 15px 40px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-  border: 1px solid var(--gmpr-border-accent) !important;
-  transition: box-shadow 0.3s ease, border-color 0.3s ease !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--gmpr-border-accent);
+  transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
-.gmpr.gmpr-wrap .gmpr-profile-card:hover {
+.gmpr-profile-card:hover {
   box-shadow:
     0 0 50px rgba(220, 165, 74, 0.12),
     0 20px 50px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-  border-color: rgba(220, 165, 74, 0.25) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border-color: rgba(220, 165, 74, 0.25);
 }
 
-.gmpr.gmpr-wrap .gmpr-profile-card.expanded {
+.gmpr-profile-card.expanded {
   box-shadow:
-    0 0 60px rgba(220, 165, 74, 0.15),
+    0 0 60px rgba(220, 165, 74, 0.18),
     0 25px 60px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-/* Header */
+/* Header - Always Visible */
 .gmpr-profile-header {
   background: linear-gradient(135deg, var(--gmpr-dark-elevated) 0%, var(--gmpr-dark-card) 100%);
   padding: 16px 24px;
@@ -116,14 +111,13 @@
   right: -4px;
   width: 20px;
   height: 20px;
+  background: linear-gradient(135deg, var(--gmpr-dark-elevated), #2a2a2a);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1.5px solid var(--gmpr-accent);
-  background: linear-gradient(135deg, var(--gmpr-dark-elevated), #2a2a2a);
-  color: var(--gmpr-text-primary);
-  font-size: 10px;
+  font-size: 9px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
@@ -133,17 +127,13 @@
   min-width: 0;
 }
 
-.gmpr.gmpr-wrap .gmpr-character-name {
-  font-size: 1.25rem !important;
-  font-weight: 800 !important;
-  color: var(--gmpr-text-primary) !important;
-  text-shadow: 0 0 20px rgba(220, 165, 74, 0.4) !important;
-  letter-spacing: 0.3px !important;
-  line-height: 1.2 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  text-transform: none !important;
-  font-family: inherit !important;
+.gmpr-character-name {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--gmpr-text-primary);
+  text-shadow: 0 0 20px rgba(220, 165, 74, 0.4);
+  letter-spacing: 1px;
+  line-height: 1.2;
 }
 
 .gmpr-character-meta {
@@ -158,8 +148,8 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.85rem;
-  font-weight: 700;
+  font-size: 0.9rem;
+  font-weight: 600;
   color: var(--gmpr-accent);
 }
 
@@ -168,7 +158,7 @@
   font-size: 0.8rem;
 }
 
-/* Dungeon Pills */
+/* Dungeon Pills - Compact View in Header */
 .gmpr-dungeon-pills {
   display: flex;
   gap: 6px;
@@ -177,7 +167,7 @@
 
 .gmpr-dungeon-pill {
   background: var(--gmpr-dark-base);
-  border: 1px solid rgba(220, 165, 74, 0.22);
+  border: 1px solid rgba(220, 165, 74, 0.2);
   border-radius: 6px;
   padding: 6px 10px;
   text-align: center;
@@ -186,7 +176,7 @@
 
 .gmpr-dungeon-pill-key {
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--gmpr-accent);
   line-height: 1;
 }
@@ -216,9 +206,9 @@
 
 .gmpr-score-value {
   font-size: 1.6rem;
-  font-weight: 900;
-  color: var(--gmpr-accent);
-  text-shadow: 0 0 15px rgba(220, 165, 74, 0.4);
+  font-weight: 700;
+  color: var(--gmpr-score-pink);
+  text-shadow: 0 0 15px rgba(226, 88, 141, 0.4);
   line-height: 1;
 }
 
@@ -247,28 +237,25 @@
 }
 
 .gmpr-profile-card.expanded .gmpr-expandable-content {
-  max-height: 800px;
+  max-height: 600px;
 }
 
 /* Dungeons Section */
 .gmpr-dungeons-section {
   padding: 20px 24px;
-  border-top: 1px solid rgba(220, 165, 74, 0.12);
-  background: var(--gmpr-dark-card);
+  border-top: 1px solid rgba(220, 165, 74, 0.1);
 }
 
-.gmpr.gmpr-wrap .gmpr-section-title {
-  font-size: 0.75rem !important;
-  font-weight: 800 !important;
-  color: var(--gmpr-accent) !important;
-  text-transform: uppercase !important;
-  letter-spacing: 0.6px !important;
-  margin: 0 0 16px 0 !important;
-  padding: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  font-family: inherit !important;
+.gmpr-section-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gmpr-accent);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .gmpr-section-title::after {
@@ -281,22 +268,22 @@
 /* Dungeons Grid */
 .gmpr-dungeons-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
 }
 
 .gmpr-dungeon-card {
   background: var(--gmpr-dark-elevated);
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.04);
-  transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+  transition: all 0.25s ease;
 }
 
 .gmpr-dungeon-card:hover {
   transform: translateY(-2px);
   border-color: rgba(220, 165, 74, 0.25);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 .gmpr-dungeon-header {
@@ -310,14 +297,13 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, transparent 30%, rgba(13, 13, 13, 0.92) 100%);
+  background: linear-gradient(to bottom, transparent 30%, rgba(13, 13, 13, 0.95) 100%);
 }
 
 .gmpr-key-level {
   position: absolute;
   top: 6px;
   right: 6px;
-  z-index: 1;
   background: linear-gradient(135deg, var(--gmpr-accent), #b8842f);
   color: #1a1a1a;
   font-weight: 700;
@@ -325,6 +311,7 @@
   padding: 2px 8px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(220, 165, 74, 0.4);
+  z-index: 1;
 }
 
 .gmpr-dungeon-body {
@@ -332,9 +319,9 @@
 }
 
 .gmpr-dungeon-name {
+  font-size: 0.75rem;
+  font-weight: 600;
   color: var(--gmpr-text-primary);
-  font-weight: 800;
-  font-size: 0.8rem;
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
@@ -353,7 +340,7 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: var(--gmpr-accent);
-  font-weight: 800;
+  font-weight: 600;
 }
 
 .gmpr-dungeon-score {
@@ -361,7 +348,7 @@
   color: var(--gmpr-text-muted);
 }
 
-/* Footer */
+/* Footer with Profile Link */
 .gmpr-footer {
   padding: 16px 24px;
   border-top: 1px solid rgba(220, 165, 74, 0.1);
@@ -369,35 +356,33 @@
   justify-content: center;
 }
 
-.gmpr.gmpr-wrap .gmpr-profile-link {
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  text-decoration: none !important;
-  padding: 10px 24px !important;
-  border-radius: 6px !important;
-  font-weight: 600 !important;
-  font-size: 0.85rem !important;
-  letter-spacing: 0.5px !important;
-  text-transform: uppercase !important;
-  color: #1a1a1a !important;
-  background: linear-gradient(135deg, var(--gmpr-accent), #b8842f) !important;
-  box-shadow: 0 4px 15px rgba(220, 165, 74, 0.25) !important;
-  border: 1px solid rgba(0, 0, 0, 0.15) !important;
-  transition: all 0.25s ease !important;
-  line-height: 1 !important;
+.gmpr-profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, var(--gmpr-accent), #b8842f);
+  color: #1a1a1a;
+  text-decoration: none;
+  padding: 10px 24px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 15px rgba(220, 165, 74, 0.25);
 }
 
-.gmpr.gmpr-wrap .gmpr-profile-link:hover {
-  transform: translateY(-1px) !important;
-  box-shadow: 0 6px 20px rgba(220, 165, 74, 0.4) !important;
-  color: #1a1a1a !important;
-  text-decoration: none !important;
+.gmpr-profile-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(220, 165, 74, 0.4);
+  color: #1a1a1a;
+  text-decoration: none;
 }
 
-.gmpr.gmpr-wrap .gmpr-profile-link svg {
-  width: 14px !important;
-  height: 14px !important;
+.gmpr-profile-link svg {
+  width: 14px;
+  height: 14px;
 }
 
 /* Mobile Responsive */
@@ -409,15 +394,14 @@
 
 @media (max-width: 768px) {
   .gmpr-dungeons-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 550px) {
   .gmpr-profile-header {
-    flex-wrap: wrap;
-    gap: 12px;
     padding: 14px 16px;
+    gap: 12px;
   }
 
   .gmpr-avatar {
@@ -426,17 +410,32 @@
   }
 
   .gmpr-character-name {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
+  }
+
+  .gmpr-class-spec {
+    font-size: 0.8rem;
+  }
+
+  .gmpr-realm-info {
+    display: none;
   }
 
   .gmpr-score-section {
-    border-left: 0;
-    padding-left: 0;
-    text-align: left;
+    padding-left: 12px;
+  }
+
+  .gmpr-score-value {
+    font-size: 1.3rem;
   }
 
   .gmpr-dungeons-section {
     padding: 16px;
+  }
+
+  .gmpr-dungeons-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
   }
 
   .gmpr-dungeon-header {
@@ -458,7 +457,121 @@
   }
 }
 
-/* No-JS fallback */
+/* Filter Toolbar */
+.gmpr.gmpr-wrap .gmpr-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--gmpr-dark-elevated);
+  border-radius: 12px;
+  border: 1px solid var(--gmpr-border-soft);
+  margin-bottom: 20px;
+}
+
+.gmpr.gmpr-wrap .gmpr-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 120px;
+}
+
+.gmpr.gmpr-wrap .gmpr-filter-group label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--gmpr-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.gmpr.gmpr-wrap .gmpr-filter-control {
+  padding: 8px 12px;
+  background: var(--gmpr-dark-card);
+  border: 1px solid var(--gmpr-border-soft);
+  border-radius: 6px;
+  color: var(--gmpr-text-primary);
+  font-size: 0.875rem;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.gmpr.gmpr-wrap .gmpr-filter-control:focus {
+  outline: none;
+  border-color: var(--gmpr-accent);
+  background: var(--gmpr-dark-base);
+}
+
+.gmpr.gmpr-wrap .gmpr-filter-control::placeholder {
+  color: var(--gmpr-text-muted);
+  opacity: 0.6;
+}
+
+.gmpr.gmpr-wrap .gmpr-clear-btn {
+  padding: 8px 16px;
+  background: var(--gmpr-accent);
+  border: none;
+  border-radius: 6px;
+  color: #0d0d0d;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease;
+  width: 100%;
+  height: 34px;
+  margin-bottom: 2px;
+}
+
+.gmpr.gmpr-wrap .gmpr-clear-btn:hover {
+  background: #f0c674;
+  transform: translateY(-1px);
+}
+
+.gmpr.gmpr-wrap .gmpr-clear-btn:active {
+  transform: translateY(0);
+}
+
+.gmpr.gmpr-wrap .gmpr-results-count {
+  align-self: flex-end;
+  color: var(--gmpr-text-muted);
+  font-size: 0.775rem;
+  margin-left: auto;
+}
+
+.gmpr.gmpr-wrap .gmpr-filter-empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--gmpr-text-muted);
+  font-size: 1rem;
+  background: var(--gmpr-dark-card);
+  border-radius: 8px;
+  border: 1px dashed var(--gmpr-border-soft);
+  margin-top: 16px;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .gmpr.gmpr-wrap .gmpr-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .gmpr.gmpr-wrap .gmpr-filter-group {
+    min-width: unset;
+  }
+
+  .gmpr.gmpr-wrap .gmpr-filter-control {
+    width: 100%;
+  }
+
+  .gmpr.gmpr-wrap .gmpr-results-count {
+    align-self: center;
+    margin-left: 0;
+    text-align: center;
+  }
+}
+
+/* No-JS fallback: show expanded content when JS is disabled */
 @media (scripting: none) {
   .gmpr-expandable-content {
     max-height: none;

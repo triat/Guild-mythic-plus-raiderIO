@@ -5,19 +5,6 @@
   var DEFAULT_POLL_MAX = 30000;
   var REFRESH_THROTTLE_MS = 60000;
 
-  // Global toggle function for expanding/collapsing cards
-  window.gmprToggleCard = function (header) {
-    var card = header.closest('.gmpr-profile-card');
-    if (!card) return;
-
-    // Don't toggle if clicking on the profile link
-    if (event && event.target.closest('.gmpr-profile-link')) {
-      return;
-    }
-
-    card.classList.toggle('expanded');
-  };
-
   function initAvatars(wrapper) {
     var imgs = wrapper.querySelectorAll('img[data-gmpr-avatar="1"]');
     for (var i = 0; i < imgs.length; i++) {
@@ -34,8 +21,218 @@
     }
   }
 
+  function initExpandCollapse(wrapper) {
+    var headers = wrapper.querySelectorAll(".gmpr-profile-header[role='button']");
+    for (var i = 0; i < headers.length; i++) {
+      (function (header) {
+        // Click handler
+        header.addEventListener("click", function (e) {
+          // Don't toggle if clicking on the profile link
+          if (e.target.closest(".gmpr-profile-link")) {
+            return;
+          }
+          toggleExpand(header);
+        });
+
+        // Keyboard handler (Enter and Space)
+        header.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            toggleExpand(header);
+          }
+        });
+      })(headers[i]);
+    }
+
+    // Prevent profile links from triggering expand
+    var links = wrapper.querySelectorAll(".gmpr-profile-link");
+    for (var j = 0; j < links.length; j++) {
+      links[j].addEventListener("click", function (e) {
+        e.stopPropagation();
+      });
+    }
+  }
+
+  function toggleExpand(header) {
+    var card = header.closest(".gmpr-profile-card");
+    if (!card) return;
+
+    var isExpanded = card.classList.contains("expanded");
+    card.classList.toggle("expanded");
+
+    // Update aria-expanded
+    header.setAttribute("aria-expanded", isExpanded ? "false" : "true");
+  }
+
+  function initFilters(wrapper) {
+    var roleSelect = wrapper.querySelector('#gmpr-filter-role');
+    var nameInput = wrapper.querySelector('#gmpr-filter-name');
+    var scoreMinInput = wrapper.querySelector('#gmpr-filter-score-min');
+    var scoreMaxInput = wrapper.querySelector('#gmpr-filter-score-max');
+    var sortSelect = wrapper.querySelector('#gmpr-sort-by');
+    var clearBtn = wrapper.querySelector('#gmpr-clear-filters');
+    var resultsCount = wrapper.querySelector('#gmpr-results-count');
+    var filterEmpty = wrapper.querySelector('#gmpr-filter-empty');
+
+    if (!roleSelect || !nameInput || !scoreMinInput || !scoreMaxInput || !sortSelect || !clearBtn) {
+      return; // Filters not present in this wrapper
+    }
+
+    // Store original order of cards to restore when clearing sort
+    var container = wrapper.querySelector('.gmpr-roster-list');
+    var originalOrder = container ? Array.from(container.querySelectorAll('.gmpr-profile-card')) : [];
+
+    var filterState = {
+      role: 'all',
+      nameSearch: '',
+      scoreMin: 0,
+      scoreMax: 999999,
+      sortBy: 'none'
+    };
+
+    function applyFilters() {
+      var cards = wrapper.querySelectorAll('.gmpr-profile-card');
+      var visibleCount = 0;
+      var totalCount = cards.length;
+
+      cards.forEach(function(card) {
+        var role = card.getAttribute('data-role') || '';
+        var name = card.getAttribute('data-name') || '';
+        var score = parseInt(card.getAttribute('data-score') || '0', 10);
+
+        var visible = true;
+
+        // Role filter (empty roles only show when "all" is selected)
+        if (filterState.role !== 'all' && role !== filterState.role) {
+          visible = false;
+        }
+
+        // Name search
+        if (filterState.nameSearch && !name.includes(filterState.nameSearch.toLowerCase())) {
+          visible = false;
+        }
+
+        // Score range
+        if (score < filterState.scoreMin || score > filterState.scoreMax) {
+          visible = false;
+        }
+
+        card.style.display = visible ? '' : 'none';
+        if (visible) visibleCount++;
+      });
+
+      applySorting();
+      updateResultsCount(visibleCount, totalCount);
+
+      // Show empty state if no results
+      if (filterEmpty) {
+        filterEmpty.style.display = visibleCount === 0 ? 'block' : 'none';
+      }
+    }
+
+    function applySorting() {
+      var container = wrapper.querySelector('.gmpr-roster-list');
+      if (!container) return;
+
+      if (filterState.sortBy === 'none') {
+        // Restore original order
+        originalOrder.forEach(function(card) {
+          container.appendChild(card);
+        });
+        return;
+      }
+
+      var cards = Array.from(container.querySelectorAll('.gmpr-profile-card'));
+      var visibleCards = cards.filter(function(card) {
+        return card.style.display !== 'none';
+      });
+
+      visibleCards.sort(function(a, b) {
+        if (filterState.sortBy.startsWith('name-')) {
+          var nameA = a.getAttribute('data-name') || '';
+          var nameB = b.getAttribute('data-name') || '';
+          var result = nameA.localeCompare(nameB);
+          return filterState.sortBy === 'name-asc' ? result : -result;
+        }
+
+        if (filterState.sortBy.startsWith('score-')) {
+          var scoreA = parseInt(a.getAttribute('data-score') || '0', 10);
+          var scoreB = parseInt(b.getAttribute('data-score') || '0', 10);
+          var result = scoreA - scoreB;
+          return filterState.sortBy === 'score-asc' ? result : -result;
+        }
+
+        return 0;
+      });
+
+      // Re-append in sorted order
+      visibleCards.forEach(function(card) {
+        container.appendChild(card);
+      });
+    }
+
+    function updateResultsCount(visible, total) {
+      if (!resultsCount) return;
+      if (visible === total) {
+        resultsCount.textContent = 'Showing all ' + total + ' characters';
+      } else {
+        resultsCount.textContent = 'Showing ' + visible + ' of ' + total + ' characters';
+      }
+    }
+
+    function clearFilters() {
+      filterState.role = 'all';
+      filterState.nameSearch = '';
+      filterState.scoreMin = 0;
+      filterState.scoreMax = 999999;
+      filterState.sortBy = 'none';
+
+      roleSelect.value = 'all';
+      nameInput.value = '';
+      scoreMinInput.value = '';
+      scoreMaxInput.value = '';
+      sortSelect.value = 'none';
+
+      applyFilters();
+    }
+
+    // Event listeners
+    roleSelect.addEventListener('change', function() {
+      filterState.role = roleSelect.value;
+      applyFilters();
+    });
+
+    nameInput.addEventListener('input', function() {
+      filterState.nameSearch = nameInput.value;
+      applyFilters();
+    });
+
+    scoreMinInput.addEventListener('input', function() {
+      filterState.scoreMin = parseInt(scoreMinInput.value || '0', 10);
+      applyFilters();
+    });
+
+    scoreMaxInput.addEventListener('input', function() {
+      filterState.scoreMax = parseInt(scoreMaxInput.value || '999999', 10);
+      applyFilters();
+    });
+
+    sortSelect.addEventListener('change', function() {
+      filterState.sortBy = sortSelect.value;
+      applyFilters();
+    });
+
+    clearBtn.addEventListener('click', clearFilters);
+
+    // Initialize results count
+    var cards = wrapper.querySelectorAll('.gmpr-profile-card');
+    updateResultsCount(cards.length, cards.length);
+  }
+
   function initWrapper(wrapper) {
     initAvatars(wrapper);
+    initExpandCollapse(wrapper);
+    initFilters(wrapper);
 
     // Async refresh (stale-while-revalidate): trigger refresh then poll for updated cache.
     var async = wrapper.getAttribute("data-gmpr-async") === "1";
