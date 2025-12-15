@@ -105,20 +105,39 @@
   background: var(--gmpr-dark-base);
 }
 
-.gmpr-faction-badge {
+/* Role Badge */
+.gmpr-role-badge {
   position: absolute;
   bottom: -4px;
   right: -4px;
   width: 20px;
   height: 20px;
-  background: linear-gradient(135deg, var(--gmpr-dark-elevated), #2a2a2a);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1.5px solid var(--gmpr-accent);
-  font-size: 9px;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.gmpr-role-badge svg {
+  width: 12px;
+  height: 12px;
+  fill: white;
+}
+
+.gmpr-role-tank {
+  background: linear-gradient(135deg, #6c757d, #5a6268);
+  color: black;
+}
+
+.gmpr-role-healing {
+  background: linear-gradient(135deg, #28a745, #218838);
+  color: white;
+}
+
+.gmpr-role-dps {
+  background: linear-gradient(135deg, #dc3545, #c82333);
 }
 
 /* Character Info */
@@ -385,78 +404,6 @@
   height: 14px;
 }
 
-/* Mobile Responsive */
-@media (max-width: 1000px) {
-  .gmpr-dungeon-pills {
-    display: none;
-  }
-}
-
-@media (max-width: 768px) {
-  .gmpr-dungeons-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 550px) {
-  .gmpr-profile-header {
-    padding: 14px 16px;
-    gap: 12px;
-  }
-
-  .gmpr-avatar {
-    width: 48px;
-    height: 48px;
-  }
-
-  .gmpr-character-name {
-    font-size: 1.15rem;
-  }
-
-  .gmpr-class-spec {
-    font-size: 0.8rem;
-  }
-
-  .gmpr-realm-info {
-    display: none;
-  }
-
-  .gmpr-score-section {
-    padding-left: 12px;
-  }
-
-  .gmpr-score-value {
-    font-size: 1.3rem;
-  }
-
-  .gmpr-dungeons-section {
-    padding: 16px;
-  }
-
-  .gmpr-dungeons-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-
-  .gmpr-dungeon-header {
-    height: 40px;
-  }
-
-  .gmpr-dungeon-body {
-    padding: 8px 10px;
-  }
-
-  .gmpr-footer {
-    padding: 14px 16px;
-  }
-
-  .gmpr-profile-link {
-    width: 100%;
-    justify-content: center;
-    padding: 12px 20px;
-  }
-}
-
 /* Filter Toolbar */
 .gmpr.gmpr-wrap .gmpr-filters {
   display: flex;
@@ -568,6 +515,78 @@
     align-self: center;
     margin-left: 0;
     text-align: center;
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 1000px) {
+  .gmpr-dungeon-pills {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .gmpr-dungeons-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 550px) {
+  .gmpr-profile-header {
+    padding: 14px 16px;
+    gap: 12px;
+  }
+
+  .gmpr-avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .gmpr-character-name {
+    font-size: 1.15rem;
+  }
+
+  .gmpr-class-spec {
+    font-size: 0.8rem;
+  }
+
+  .gmpr-realm-info {
+    display: none;
+  }
+
+  .gmpr-score-section {
+    padding-left: 12px;
+  }
+
+  .gmpr-score-value {
+    font-size: 1.3rem;
+  }
+
+  .gmpr-dungeons-section {
+    padding: 16px;
+  }
+
+  .gmpr-dungeons-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .gmpr-dungeon-header {
+    height: 40px;
+  }
+
+  .gmpr-dungeon-body {
+    padding: 8px 10px;
+  }
+
+  .gmpr-footer {
+    padding: 14px 16px;
+  }
+
+  .gmpr-profile-link {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 20px;
   }
 }
 

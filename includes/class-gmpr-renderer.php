@@ -141,7 +141,6 @@ final class GMPR_Renderer {
 			$realm = isset($m['realm']) && is_string($m['realm']) ? (string) $m['realm'] : '';
 			$class = isset($m['class']) && is_string($m['class']) ? trim((string) $m['class']) : '';
 			$spec = isset($m['active_spec_name']) && is_string($m['active_spec_name']) ? trim((string) $m['active_spec_name']) : '';
-			$faction = isset($m['faction']) && is_string($m['faction']) ? strtolower(trim((string) $m['faction'])) : '';
 			$meta_text = '';
 			if ($class !== '' && $spec !== '') {
 				$meta_text = $spec . ' ' . $class;
@@ -154,15 +153,19 @@ final class GMPR_Renderer {
 			$details_runs = array_slice($best_runs, 0, 8);
 			$has_details = count($details_runs) > 0;
 
-			$faction_badge = '';
-			if ($faction === 'alliance') {
-				$faction_badge = '⚔';
-			} elseif ($faction === 'horde') {
-				$faction_badge = '☠';
+			// Role badge
+			$role = isset($m['active_spec_role']) && is_string($m['active_spec_role']) ? strtolower(trim((string) $m['active_spec_role'])) : '';
+			$role_badge_html = '';
+			if ($role === 'tank') {
+				$role_badge_html = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" width="12" height="12"><path fill="currentColor" d="M6 1L2 2.5v3c0 2.5 1.8 4.3 4 5.5 2.2-1.2 4-3 4-5.5v-3L6 1zm0 1.2l3 1.1v2.2c0 1.9-1.3 3.3-3 4.3-1.7-1-3-2.4-3-4.3V3.3l3-1.1z"/></svg>';
+			} elseif ($role === 'healing') {
+				$role_badge_html = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" width="12" height="12"><path fill="currentColor" d="M5 2h2v3h3v2H7v3H5V7H2V5h3V2z"/></svg>';
+			} elseif ($role === 'dps') {
+				$role_badge_html = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24"><g transform="rotate(45 12 12)" id="g3"><path fill="currentColor" d="m 11,2 2,0 0,11 2,2 -3,0 H 9 l 2,-2 z" id="path1" sodipodi:nodetypes="cccccccc" /><rect fill="currentColor" x="7" y="13" width="10" height="2" rx="1" id="rect1" /><rect fill="currentColor" x="10.909239" y="14.311488" width="2.1353853" height="6.1919332" rx="1.0676926" id="rect2" style="stroke-width:1.2425" /><rect fill="currentColor" x="10" y="20" width="4" height="2" rx="1" id="rect3" /></g></svg>
+';
 			}
 
 			// Extract data attributes for filtering/sorting
-			$role = isset($m['active_spec_role']) && is_string($m['active_spec_role']) ? strtolower(trim((string) $m['active_spec_role'])) : '';
 			$name_lower = function_exists('mb_strtolower') ? mb_strtolower($name, 'UTF-8') : strtolower($name);
 			$score_numeric = isset($m['mplus_score']) && is_numeric($m['mplus_score']) ? (int) round((float) $m['mplus_score']) : 0;
 
@@ -181,8 +184,16 @@ final class GMPR_Renderer {
 
 			$out .= '<div class="gmpr-avatar-wrapper">';
 			$out .= '<img class="gmpr-avatar" data-gmpr-avatar="1" data-gmpr-placeholder-src="' . esc_attr($placeholder) . '" src="' . esc_url($img_src) . '" alt="' . esc_attr(sprintf(__('Avatar of %s', 'gmpr'), $name)) . '" loading="lazy" decoding="async" />';
-			if ($faction_badge !== '') {
-				$out .= '<span class="gmpr-faction-badge" aria-hidden="true">' . esc_html($faction_badge) . '</span>';
+			if ($role_badge_html !== '') {
+				$role_label = '';
+				if ($role === 'tank') {
+					$role_label = __('Tank', 'gmpr');
+				} elseif ($role === 'healing') {
+					$role_label = __('Healer', 'gmpr');
+				} elseif ($role === 'dps') {
+					$role_label = __('DPS', 'gmpr');
+				}
+				$out .= '<span class="gmpr-role-badge gmpr-role-' . esc_attr($role) . '" aria-label="' . esc_attr($role_label) . '">' . $role_badge_html . '</span>';
 			}
 			$out .= '</div>';
 
@@ -292,7 +303,7 @@ final class GMPR_Renderer {
 			$out .= '</div>';
 		}
 
-		$out .= '</div>'; // end wrap
+		$out .= '</div>';
 		return $out;
 	}
 
