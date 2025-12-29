@@ -1,6 +1,8 @@
 # Guild-mythic-plus-raiderIO
 WordPress plugin that displays World of Warcraft guild members with their **Raider.IO** (Mythic+) score using a shortcode.
 
+<img width="1233" height="980" alt="image" src="https://github.com/user-attachments/assets/dd60aa94-6cd6-42ce-8b6b-31efc2c8c51c" />
+
 ## Installation
 - Copy this repository (or its contents) into `wp-content/plugins/guild-mythic-plus-raiderio/`
 - Activate **Guild Mythic+ Raider.IO** in the WordPress admin
