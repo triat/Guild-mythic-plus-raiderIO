@@ -9,6 +9,7 @@ final class GMPR_Plugin {
 	private const DEFAULT_MEMBER_LIMIT = 20;
 
 	public static function init(): void {
+		load_plugin_textdomain('gmpr', false, basename(GMPR_PLUGIN_DIR) . '/languages');
 		add_shortcode('gmpr_guild', array(__CLASS__, 'shortcode_guild'));
 		GMPR_Settings::init();
 		GMPR_Async_Refresh::init();
@@ -416,6 +417,13 @@ final class GMPR_Plugin {
 				'restBase' => esc_url_raw(rest_url('gmpr/v1')),
 				'pollIntervalMs' => 2000,
 				'pollMaxMs' => 30000,
+				// Translatable strings for JavaScript
+				'i18n' => array(
+					/* translators: %d is the total number of characters */
+					'showingAll' => __('Showing all %d characters', 'gmpr'),
+					/* translators: %1$d is the visible number, %2$d is the total number */
+					'showingFiltered' => __('Showing %1$d of %2$d characters', 'gmpr'),
+				),
 			)
 		);
 	}

@@ -174,9 +174,11 @@
     function updateResultsCount(visible, total) {
       if (!resultsCount) return;
       if (visible === total) {
-        resultsCount.textContent = 'Showing all ' + total + ' characters';
+        resultsCount.textContent = gmprData.i18n.showingAll.replace('%d', total);
       } else {
-        resultsCount.textContent = 'Showing ' + visible + ' of ' + total + ' characters';
+        resultsCount.textContent = gmprData.i18n.showingFiltered
+          .replace('%1$d', visible)
+          .replace('%2$d', total);
       }
     }
 

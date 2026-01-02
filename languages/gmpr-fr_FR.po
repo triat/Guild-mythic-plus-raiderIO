@@ -1,0 +1,216 @@
+# Guild Mythic+ Raider.IO - French Translation
+# Copyright (C) 2025 Guild Mythic+ Raider.IO Contributors
+# This file is distributed under the GPLv3 license.
+msgid ""
+msgstr ""
+"Project-Id-Version: Guild Mythic+ Raider.IO 0.1.3\n"
+"Report-Msgid-Bugs-To: https://github.com/anthropics/guild-mythic-plus-raiderio/issues\n"
+"POT-Creation-Date: 2025-12-29 00:00+0000\n"
+"PO-Revision-Date: 2025-12-29 00:00+0000\n"
+"Last-Translator: Claude Code <noreply@anthropic.com>\n"
+"Language-Team: French\n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Generator: Claude Code\n"
+
+#: includes/class-gmpr-plugin.php:48
+msgid "Invalid configuration: please provide valid region/realm/guild."
+msgstr "Configuration invalide : veuillez fournir une région/royaume/guilde valide."
+
+#. translators: %d is the total number of characters
+#: includes/class-gmpr-plugin.php:423
+msgid "Showing all %d characters"
+msgstr "Affichage des %d personnages"
+
+#. translators: %1$d is the visible number, %2$d is the total number
+#: includes/class-gmpr-plugin.php:425
+msgid "Showing %1$d of %2$d characters"
+msgstr "Affichage de %1$d sur %2$d personnages"
+
+#: includes/class-gmpr-plugin.php:55
+msgid "Missing Raider.IO API key: define GMPR_RAIDERIO_API_KEY (or use the gmpr_raiderio_api_key filter)."
+msgstr "Clé API Raider.IO manquante : définissez GMPR_RAIDERIO_API_KEY (ou utilisez le filtre gmpr_raiderio_api_key)."
+
+#: includes/class-gmpr-renderer.php:74
+msgid "Updating… (showing cached data)"
+msgstr "Mise à jour… (affichage des données en cache)"
+
+#: includes/class-gmpr-renderer.php:78
+msgid "No members found."
+msgstr "Aucun membre trouvé."
+
+#: includes/class-gmpr-renderer.php:84
+msgid "Role:"
+msgstr "Rôle :"
+
+#: includes/class-gmpr-renderer.php:86
+msgid "All Roles"
+msgstr "Tous les rôles"
+
+#: includes/class-gmpr-renderer.php:87
+msgid "Tank"
+msgstr "Tank"
+
+#: includes/class-gmpr-renderer.php:88
+msgid "Healer"
+msgstr "Soigneur"
+
+#: includes/class-gmpr-renderer.php:89
+msgid "DPS"
+msgstr "DPS"
+
+#: includes/class-gmpr-renderer.php:94
+msgid "Name:"
+msgstr "Nom :"
+
+#: includes/class-gmpr-renderer.php:95
+msgid "Search..."
+msgstr "Rechercher..."
+
+#: includes/class-gmpr-renderer.php:99
+msgid "Min Score:"
+msgstr "Score Min :"
+
+#: includes/class-gmpr-renderer.php:104
+msgid "Max Score:"
+msgstr "Score Max :"
+
+#: includes/class-gmpr-renderer.php:109
+msgid "Sort:"
+msgstr "Tri :"
+
+#: includes/class-gmpr-renderer.php:111
+msgid "Default"
+msgstr "Par défaut"
+
+#: includes/class-gmpr-renderer.php:112
+msgid "Name (A-Z)"
+msgstr "Nom (A-Z)"
+
+#: includes/class-gmpr-renderer.php:113
+msgid "Name (Z-A)"
+msgstr "Nom (Z-A)"
+
+#: includes/class-gmpr-renderer.php:114
+msgid "Score (High to Low)"
+msgstr "Score (Élevé à Faible)"
+
+#: includes/class-gmpr-renderer.php:115
+msgid "Score (Low to High)"
+msgstr "Score (Faible à Élevé)"
+
+#: includes/class-gmpr-renderer.php:121
+msgid "Clear"
+msgstr "Effacer"
+
+#: includes/class-gmpr-renderer.php:128
+msgid "Guild members"
+msgstr "Membres de la guilde"
+
+#. translators: %s is the character name
+#: includes/class-gmpr-renderer.php:186
+msgid "Avatar of %s"
+msgstr "Avatar de %s"
+
+#: includes/class-gmpr-renderer.php:213
+msgid "Best Mythic+ runs"
+msgstr "Meilleures courses Mythique+"
+
+#: includes/class-gmpr-renderer.php:231
+msgid "Mythic+ score"
+msgstr "Score Mythique+"
+
+#: includes/class-gmpr-renderer.php:232
+msgid "M+ Score"
+msgstr "Score M+"
+
+#: includes/class-gmpr-renderer.php:247
+msgid "Best Mythic+ Runs"
+msgstr "Meilleures courses Mythique+"
+
+#: includes/class-gmpr-renderer.php:287
+msgid "View Raider.IO Profile"
+msgstr "Voir le profil Raider.IO"
+
+#: includes/class-gmpr-renderer.php:302
+msgid "No characters match your filters."
+msgstr "Aucun personnage ne correspond à vos filtres."
+
+#: includes/class-gmpr-renderer.php:332
+msgid "Loading roster…"
+msgstr "Chargement du roster…"
+
+#: includes/class-gmpr-renderer.php:333
+msgid "Fetching latest data…"
+msgstr "Récupération des dernières données…"
+
+#: includes/class-gmpr-settings.php:38
+msgid "GMPR Settings"
+msgstr "Paramètres GMPR"
+
+#: includes/class-gmpr-settings.php:40
+msgid "Configure the default guild and caching behavior. Shortcode attributes override these defaults."
+msgstr "Configurez la guilde par défaut et le comportement du cache. Les attributs du shortcode remplacent ces valeurs par défaut."
+
+#: includes/class-gmpr-settings.php:45
+msgid "Raider.IO API key"
+msgstr "Clé API Raider.IO"
+
+#: includes/class-gmpr-settings.php:46
+msgid "Region"
+msgstr "Région"
+
+#: includes/class-gmpr-settings.php:47
+msgid "Realm"
+msgstr "Royaume"
+
+#: includes/class-gmpr-settings.php:48
+msgid "Guild name"
+msgstr "Nom de la guilde"
+
+#: includes/class-gmpr-settings.php:49
+msgid "Cache TTL (seconds)"
+msgstr "Durée de vie du cache (secondes)"
+
+#: includes/class-gmpr-settings.php:50
+msgid "Member limit"
+msgstr "Limite de membres"
+
+#: includes/class-gmpr-settings.php:132
+msgid "You do not have permission to access this page."
+msgstr "Vous n'avez pas la permission d'accéder à cette page."
+
+#: includes/class-gmpr-settings.php:144
+msgid "Help"
+msgstr "Aide"
+
+#: includes/class-gmpr-settings.php:145
+msgid "Shortcode attributes override admin defaults."
+msgstr "Les attributs du shortcode remplacent les valeurs par défaut de l'administration."
+
+#: includes/class-gmpr-settings.php:147
+msgid "Tip: use refresh=\"1\" (admin only) to bypass cache while troubleshooting."
+msgstr "Astuce : utilisez refresh=\"1\" (admin uniquement) pour contourner le cache lors du dépannage."
+
+#: includes/class-gmpr-settings.php:153
+msgid "Leave empty to keep the existing key. This value is never shown in plaintext."
+msgstr "Laissez vide pour conserver la clé existante. Cette valeur n'est jamais affichée en clair."
+
+#: includes/class-gmpr-settings.php:159
+msgid "(not set)"
+msgstr "(non défini)"
+
+#: includes/class-gmpr-settings.php:172
+msgid "Realm slug or name. Accents may matter for Raider.IO."
+msgstr "Slug ou nom du royaume. Les accents peuvent être importants pour Raider.IO."
+
+#: includes/class-gmpr-settings.php:185
+msgid "Min 60, max 6 hours."
+msgstr "Min 60, max 6 heures."
+
+#: includes/class-gmpr-settings.php:192
+msgid "0 disables the limit."
+msgstr "0 désactive la limite."
