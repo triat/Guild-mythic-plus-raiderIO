@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Guild Mythic+ Raider.IO
  * Description: Affiche les membres d’une guilde World of Warcraft avec leur score Raider.IO (Mythic+).
- * Version: 0.1.4
+ * Version: 0.1.5
  * Requires at least: 6.0
  * Requires PHP: 8.0
  * Author: Guild Mythic+ Raider.IO Contributors
@@ -17,7 +17,7 @@ if (!defined('ABSPATH')) {
 	exit;
 }
 
-define('GMPR_VERSION', '0.1.4');
+define('GMPR_VERSION', '0.1.5');
 define('GMPR_PLUGIN_FILE', __FILE__);
 define('GMPR_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('GMPR_PLUGIN_URL', plugin_dir_url(__FILE__));
