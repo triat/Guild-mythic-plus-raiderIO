@@ -111,7 +111,7 @@ final class GMPR_Renderer {
 			$out .= '<option value="none">' . esc_html__('Default', 'gmpr') . '</option>';
 			$out .= '<option value="name-asc">' . esc_html__('Name (A-Z)', 'gmpr') . '</option>';
 			$out .= '<option value="name-desc">' . esc_html__('Name (Z-A)', 'gmpr') . '</option>';
-			$out .= '<option value="score-desc">' . esc_html__('Score (High to Low)', 'gmpr') . '</option>';
+			$out .= '<option value="score-desc" selected="selected">' . esc_html__('Score (High to Low)', 'gmpr') . '</option>';
 			$out .= '<option value="score-asc">' . esc_html__('Score (Low to High)', 'gmpr') . '</option>';
 			$out .= '</select>';
 			$out .= '</div>';

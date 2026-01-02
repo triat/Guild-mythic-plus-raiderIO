@@ -4,6 +4,19 @@
   var DEFAULT_POLL_INTERVAL = 2000;
   var DEFAULT_POLL_MAX = 30000;
   var REFRESH_THROTTLE_MS = 60000;
+  var DEFAULT_DEBOUNCE_MS = 300;
+
+  function debounce(func, timeout) {
+    var timer;
+    return function () {
+      var context = this;
+      var args = arguments;
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        func.apply(context, args);
+      }, timeout);
+    };
+  }
 
   function initAvatars(wrapper) {
     var imgs = wrapper.querySelectorAll('img[data-gmpr-avatar="1"]');
@@ -87,7 +100,7 @@
       nameSearch: '',
       scoreMin: 0,
       scoreMax: 999999,
-      sortBy: 'none'
+      sortBy: 'score-desc'
     };
 
     function applyFilters() {
@@ -187,13 +200,13 @@
       filterState.nameSearch = '';
       filterState.scoreMin = 0;
       filterState.scoreMax = 999999;
-      filterState.sortBy = 'none';
+      filterState.sortBy = 'score-desc';
 
       roleSelect.value = 'all';
       nameInput.value = '';
       scoreMinInput.value = '';
       scoreMaxInput.value = '';
-      sortSelect.value = 'none';
+      sortSelect.value = 'score-desc';
 
       applyFilters();
     }
@@ -204,20 +217,20 @@
       applyFilters();
     });
 
-    nameInput.addEventListener('input', function() {
+    nameInput.addEventListener('input', debounce(function() {
       filterState.nameSearch = nameInput.value;
       applyFilters();
-    });
+    }, DEFAULT_DEBOUNCE_MS));
 
-    scoreMinInput.addEventListener('input', function() {
+    scoreMinInput.addEventListener('input', debounce(function() {
       filterState.scoreMin = parseInt(scoreMinInput.value || '0', 10);
       applyFilters();
-    });
+    }, DEFAULT_DEBOUNCE_MS));
 
-    scoreMaxInput.addEventListener('input', function() {
+    scoreMaxInput.addEventListener('input', debounce(function() {
       filterState.scoreMax = parseInt(scoreMaxInput.value || '999999', 10);
       applyFilters();
-    });
+    }, DEFAULT_DEBOUNCE_MS));
 
     sortSelect.addEventListener('change', function() {
       filterState.sortBy = sortSelect.value;
@@ -226,9 +239,10 @@
 
     clearBtn.addEventListener('click', clearFilters);
 
-    // Initialize results count
+    // Initialize results count and apply default sort
     var cards = wrapper.querySelectorAll('.gmpr-profile-card');
     updateResultsCount(cards.length, cards.length);
+    applyFilters();
   }
 
   function initWrapper(wrapper) {

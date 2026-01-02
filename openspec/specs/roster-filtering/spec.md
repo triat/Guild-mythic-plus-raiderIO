@@ -26,38 +26,39 @@ The roster display MUST provide a role filter allowing users to show only charac
 **And** can be filtered by selecting "Unknown" in the role dropdown
 
 ### Requirement: Filter by Name
-The roster display MUST provide a name search filter allowing users to find characters by partial name match.
+The roster display MUST provide a name search filter allowing users to find characters by partial name match, with debounced input handling.
 
-#### Scenario: User searches for partial name
-**Given** a guild roster with characters including "Eldrìlas", "Eldris", and "Aidz"
+#### Scenario: User searches for partial name with debounce
+**Given** a guild roster with 50+ characters including "Eldrìlas", "Eldris", and "Aidz"
 **When** the user types "eldr" in the name search input
-**Then** only "Eldrìlas" and "Eldris" are displayed
+**Then** the filter MUST NOT apply immediately on each keystroke
+**And** the filter applies after 300ms of no typing activity
+**And** only "Eldrìlas" and "Eldris" are displayed after the debounce period
 **And** the search is case-insensitive
 **And** special characters are matched correctly
 
-#### Scenario: User clears name search
-**Given** an active name filter showing 3 of 20 characters
-**When** the user clears the name search input
-**Then** all 20 characters are displayed (subject to other active filters)
+#### Scenario: User continues typing before debounce fires
+**Given** the user has typed "el" in the name search input
+**When** the user types "d" within 300ms
+**Then** the previous debounce timer is cancelled
+**And** a new 300ms timer starts
+**And** the filter only applies once the user stops typing for 300ms
 
 ### Requirement: Filter by Score Range
-The roster display MUST provide min/max Mythic+ score filters allowing users to find characters within a specific score range.
+The roster display MUST provide min/max Mythic+ score filters allowing users to find characters within a specific score range, with debounced input handling.
 
-#### Scenario: User sets minimum score
+#### Scenario: User sets minimum score with debounce
 **Given** a guild roster with characters ranging from 0 to 3500 score
-**When** the user sets minimum score to 3000
-**Then** only characters with `mplus_score >= 3000` are displayed
-**And** characters with score < 3000 are hidden
+**When** the user types "3000" in the minimum score input
+**Then** the filter MUST NOT apply on each digit entered
+**And** the filter applies after 300ms of no typing activity
+**And** only characters with `mplus_score >= 3000` are displayed after the debounce period
 
-#### Scenario: User sets both min and max score
-**Given** a guild roster with characters ranging from 0 to 3500 score
-**When** the user sets minimum score to 2000 and maximum score to 3000
-**Then** only characters with `2000 <= mplus_score <= 3000` are displayed
-
-#### Scenario: User sets only maximum score
-**Given** a guild roster with characters ranging from 0 to 3500 score
-**When** the user sets maximum score to 1000
-**Then** only characters with `mplus_score <= 1000` are displayed
+#### Scenario: User adjusts score filter rapidly
+**Given** the user is typing in the minimum score field
+**When** the user types multiple digits in quick succession (e.g., "3", "0", "0", "0")
+**Then** only one filter operation executes after typing completes
+**And** the final value "3000" is used for filtering
 
 ### Requirement: Sort by Name
 The roster display MUST provide sorting options to order characters alphabetically by name.
@@ -74,43 +75,41 @@ The roster display MUST provide sorting options to order characters alphabetical
 **Then** characters are re-ordered to: "Zyra", "Eldrìlas", "Aidz"
 
 ### Requirement: Sort by Score
-The roster display MUST provide sorting options to order characters by Mythic+ score.
+The roster display MUST provide sorting options to order characters by Mythic+ score, with score descending as the default sort order.
 
-#### Scenario: User sorts by score descending
-**Given** characters with scores 3500, 1200, 2800
-**When** the user selects "Score (High to Low)" from the sort dropdown
-**Then** characters are re-ordered to: 3500, 2800, 1200
+#### Scenario: Default sort is score descending
+**Given** a guild roster with characters having scores 1200, 3500, 2800
+**When** the roster is initially loaded
+**Then** characters are automatically sorted by score descending
+**And** the display order is: 3500, 2800, 1200
+**And** the sort dropdown shows "Score (High to Low)" as selected
 
-#### Scenario: User sorts by score ascending
-**Given** characters with scores 3500, 1200, 2800
-**When** the user selects "Score (Low to High)" from the sort dropdown
-**Then** characters are re-ordered to: 1200, 2800, 3500
-
-#### Scenario: Sorting respects active filters
-**Given** 10 characters, filtered to show 5 DPS characters
-**When** the user sorts by score descending
-**Then** only the 5 visible DPS characters are re-ordered
-**And** hidden characters remain hidden
+#### Scenario: Roster maintains score sort on data refresh
+**Given** a roster with default score descending sort active
+**When** async data refresh occurs and new HTML is injected
+**Then** the roster is automatically re-sorted by score descending
+**And** the sort dropdown shows "Score (High to Low)" as selected
 
 ### Requirement: Clear All Filters
-The roster display MUST provide a "Clear" button to reset all filters and sorting to default state.
+The roster display MUST provide a "Clear" button to reset all filters and sorting to default state (score descending).
 
-#### Scenario: User clears all filters
-**Given** active filters: Role="DPS", Name="aid", MinScore=2000, Sort="Score Desc"
+#### Scenario: User clears all filters and returns to default sort
+**Given** active filters: Role="DPS", Name="aid", MinScore=2000, Sort="Name (A-Z)"
 **When** the user clicks the "Clear" button
 **Then** all filter inputs are reset to default values
 **And** all characters are displayed
-**And** characters return to default order
+**And** characters are sorted by score descending (default sort)
+**And** the sort dropdown shows "Score (High to Low)" as selected
 
 ### Requirement: Filter State Persistence During Refresh
-Filter state MUST be preserved when async data refresh occurs.
+Filter state MUST be preserved when async data refresh occurs, including debounce behavior.
 
-#### Scenario: Filters persist during async refresh
-**Given** active filters showing 10 of 50 characters
+#### Scenario: Debounce persists during async refresh
+**Given** active filters with pending debounce timers
 **When** async data refresh triggers and new HTML is injected
-**Then** the same filters are automatically re-applied
-**And** the character count may update based on new data
-**And** the user's filter selection remains active
+**Then** the debounce logic is re-initialized for the new DOM elements
+**And** any in-flight debounce timers from the old DOM are cancelled
+**And** new user input creates new debounce timers
 
 ### Requirement: Character Data Attributes
 Each character card MUST include data attributes for client-side filtering.
@@ -159,4 +158,33 @@ The Raider.IO character profile API request MUST include `active_spec_role` in t
 **When** the API URL is constructed
 **Then** the `fields` parameter includes `active_spec_role`
 **And** the full fields value is `mythic_plus_scores_by_season:current,mythic_plus_best_runs,active_spec_role`
+
+### Requirement: Debounced Text Input Filtering
+Text and numeric filter inputs (name search, min score, max score) MUST use debounced input handling to improve performance with large rosters.
+
+#### Scenario: Default debounce timeout
+**Given** no custom configuration is provided
+**When** the filter inputs are initialized
+**Then** the debounce timeout is set to 300ms for text and numeric inputs
+
+#### Scenario: Custom debounce timeout
+**Given** a custom timeout value is defined in the initialization
+**When** the filter inputs are initialized
+**Then** the custom timeout value is used for debouncing text and numeric inputs
+**And** the behavior remains consistent with the default implementation
+
+### Requirement: Immediate Dropdown Filtering
+Dropdown filters (role, sort) and buttons (clear) MUST apply changes immediately without debouncing.
+
+#### Scenario: Role filter applies immediately
+**Given** a guild roster with characters of mixed roles
+**When** the user selects "Tank" from the role filter dropdown
+**Then** the filter applies immediately without delay
+**And** only Tank characters are displayed
+
+#### Scenario: Sort applies immediately
+**Given** a guild roster with unsorted characters
+**When** the user selects "Score (High to Low)" from the sort dropdown
+**Then** the sort applies immediately without delay
+**And** characters are re-ordered instantly
 
